@@ -1,0 +1,17 @@
+{
+  "name": "davinci",
+  "version": "0.1.0",
+  "description": "An agentic kit: Agent Skills for Claude Code, Codex and Copilot, installable via npm",
+  "bin": {
+    "davinci": "./bin/davinci.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "usecases"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
