@@ -21,41 +21,64 @@ function skillDirs(tools) {
 const CODEX_SKILL_DIR = '.agents/skills';
 const CODEX_POLICY = 'policy:\n  allow_implicit_invocation: false\n';
 
-// Subagents are picked from their description, so tie them to their usecase to keep the
-// agent from reaching for them on requests that did not go through davinci.
+// Subagents are picked from their description, so scope them to davinci to keep the agent
+// from reaching for them on requests that did not go through davinci.
 function agentDescription(agent) {
-  return `${agent.description} Used only when the ${agent.skill} workflow delegates to it; never select it for other requests.`;
+  const by = agent.owner ? `the ${agent.owner} workflow` : 'a davinci workflow';
+  const text = /[.!?]$/.test(agent.description) ? agent.description : `${agent.description}.`;
+  return `${text} Used only when ${by} delegates to it; never select it for other requests.`;
+}
+
+// Tool-neutral capabilities and model tiers (see agents.js), mapped per tool. Omitting `tools`
+// keeps the tool's defaults, including MCP servers, which an explicit list would cut off.
+const CLAUDE_TOOLS = { read: ['Read', 'Grep', 'Glob'], edit: ['Edit', 'Write'], execute: ['Bash'], web: ['WebFetch', 'WebSearch'] };
+const COPILOT_TOOLS = { read: ['read', 'search'], edit: ['edit'], execute: ['execute'], web: ['web'] };
+const CLAUDE_MODELS = { strong: 'opus', standard: 'sonnet', fast: 'haiku' };
+const CODEX_EFFORT = { strong: 'high', standard: 'medium', fast: 'low' };
+
+function mapTools(tools, table) {
+  return tools.flatMap((t) => table[t]);
 }
 
 function tomlString(text) {
   return '"""\n' + text.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""').trim() + '\n"""';
 }
 
-function renderMarkdown(agent) {
-  return [
-    '---',
-    `name: ${agent.name}`,
-    `description: ${JSON.stringify(agentDescription(agent))}`,
-    '---',
-    '',
-    agent.body.trim(),
-    '',
-  ].join('\n');
+function renderMarkdown(agent, extra) {
+  return ['---', `name: ${agent.name}`, `description: ${JSON.stringify(agentDescription(agent))}`, ...extra, '---', '', agent.body.trim(), ''].join(
+    '\n'
+  );
 }
 
+function renderClaude(agent) {
+  const extra = [];
+  if (agent.tools) extra.push(`tools: ${mapTools(agent.tools, CLAUDE_TOOLS).join(', ')}`);
+  if (agent.model) extra.push(`model: ${CLAUDE_MODELS[agent.model]}`);
+  return renderMarkdown(agent, extra);
+}
+
+// Copilot model names change often, so agents keep the user's selected model.
+function renderCopilot(agent) {
+  const extra = agent.tools ? [`tools: ${JSON.stringify(mapTools(agent.tools, COPILOT_TOOLS))}`] : [];
+  return renderMarkdown(agent, extra);
+}
+
+// Codex has no per-tool list: an agent that can neither edit nor execute runs read-only.
 function renderToml(agent) {
-  return [
-    `name = ${JSON.stringify(agent.name)}`,
-    `description = ${JSON.stringify(agentDescription(agent))}`,
-    `developer_instructions = ${tomlString(agent.body)}`,
-    '',
-  ].join('\n');
+  const lines = [`name = ${JSON.stringify(agent.name)}`, `description = ${JSON.stringify(agentDescription(agent))}`];
+  if (agent.model) lines.push(`model_reasoning_effort = "${CODEX_EFFORT[agent.model]}"`);
+  if (agent.tools) {
+    const writes = agent.tools.includes('edit') || agent.tools.includes('execute');
+    lines.push(`sandbox_mode = "${writes ? 'workspace-write' : 'read-only'}"`);
+  }
+  lines.push(`developer_instructions = ${tomlString(agent.body)}`, '');
+  return lines.join('\n');
 }
 
 const AGENT_TARGETS = {
-  claude: { dir: '.claude/agents', ext: '.md', render: renderMarkdown },
+  claude: { dir: '.claude/agents', ext: '.md', render: renderClaude },
   codex: { dir: '.codex/agents', ext: '.toml', render: renderToml },
-  copilot: { dir: '.github/agents', ext: '.agent.md', render: renderMarkdown },
+  copilot: { dir: '.github/agents', ext: '.agent.md', render: renderCopilot },
 };
 
 function invocationHelp(tools) {

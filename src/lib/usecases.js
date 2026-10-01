@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const { parse } = require('./frontmatter');
+const { PREFIX, readAgent, loadTeam } = require('./agents');
 
-const PREFIX = 'davinci-';
 const ROUTER_NAME = 'davinci';
 const KIT_DIR = path.join(__dirname, '..', '..', 'usecases');
 
@@ -20,18 +20,9 @@ function loadAgents(id, dir) {
   return fs
     .readdirSync(agentsDir)
     .filter((f) => f.endsWith('.md'))
-    .map((file) => {
-      const raw = fs.readFileSync(path.join(agentsDir, file), 'utf8');
-      const { data, body } = parse(raw);
-      const expected = `${skillName(id)}-${file.slice(0, -3)}`;
-      if (data.name !== expected) {
-        throw new Error(`usecases/${id}/agents/${file}: name must be "${expected}", got "${data.name}"`);
-      }
-      if (!data.description) {
-        throw new Error(`usecases/${id}/agents/${file}: missing description`);
-      }
-      return { name: data.name, description: data.description, body, skill: skillName(id) };
-    });
+    .map((file) =>
+      readAgent(path.join(agentsDir, file), `usecases/${id}/agents/${file}`, `${skillName(id)}-${file.slice(0, -3)}`, skillName(id))
+    );
 }
 
 function load(id) {
@@ -46,12 +37,34 @@ function load(id) {
   return { id, dir, description: data.description, agents: loadAgents(id, dir) };
 }
 
-function listUsecases() {
-  if (!fs.existsSync(KIT_DIR)) return [];
-  return fs
-    .readdirSync(KIT_DIR, { withFileTypes: true })
-    .filter((e) => e.isDirectory())
-    .map((e) => load(e.name));
+// Every agent name must be unique across the team and all usecases, and a usecase id must not
+// reuse a team role, or `davinci-<id>` would name both a skill and an agent.
+function checkNames(usecases, team) {
+  const seen = new Set();
+  for (const agent of [...team, ...usecases.flatMap((u) => u.agents)]) {
+    if (seen.has(agent.name)) throw new Error(`Agent name "${agent.name}" is defined twice in the kit`);
+    seen.add(agent.name);
+  }
+  for (const u of usecases) {
+    if (seen.has(skillName(u.id))) throw new Error(`usecases/${u.id}: id clashes with team agent "${skillName(u.id)}"`);
+  }
 }
 
-module.exports = { PREFIX, ROUTER_NAME, kitVersion, skillName, listUsecases };
+// Loads and validates the whole kit, so a broken file fails before anything is touched.
+function loadKit() {
+  const usecases = fs.existsSync(KIT_DIR)
+    ? fs
+        .readdirSync(KIT_DIR, { withFileTypes: true })
+        .filter((e) => e.isDirectory())
+        .map((e) => load(e.name))
+    : [];
+  const team = loadTeam();
+  checkNames(usecases, team);
+  return { usecases, team };
+}
+
+function listUsecases() {
+  return loadKit().usecases;
+}
+
+module.exports = { PREFIX, ROUTER_NAME, kitVersion, skillName, loadKit, listUsecases };
