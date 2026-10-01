@@ -6,6 +6,7 @@
     "davinci": "./bin/davinci.js"
   },
   "files": [
+    "agents",
     "bin",
     "src",
     "usecases"

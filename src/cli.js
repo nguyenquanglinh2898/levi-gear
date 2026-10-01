@@ -1,6 +1,7 @@
 const { init } = require('./commands/init');
 const { update } = require('./commands/update');
 const { list } = require('./commands/list');
+const { status } = require('./commands/status');
 const { kitVersion } = require('./lib/usecases');
 
 const HELP = `davinci ${kitVersion()}
@@ -10,7 +11,10 @@ Usage: davinci <command>
 Commands:
   init [usecase...] [--tools claude,codex,copilot]
            Install usecases (all by default) for the chosen tools
-  update   Refresh installed usecases to this package version
+  update [--force [path...]]
+           Refresh installed files to this package version. Files you changed are kept;
+           --force overwrites them (all, or only the given paths)
+  status   Show what update would do, without changing anything
   list     List usecases available in the kit
 `;
 
@@ -22,7 +26,9 @@ function main(argv) {
       case 'init':
         return init(projectDir, rest);
       case 'update':
-        return update(projectDir);
+        return update(projectDir, rest);
+      case 'status':
+        return status(projectDir);
       case 'list':
         return list(projectDir);
       case undefined:

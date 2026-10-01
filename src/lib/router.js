@@ -3,7 +3,8 @@ const { skillName } = require('./usecases');
 // Builds the SKILL.md of the `davinci` entry point for one skill directory. Usecase skills
 // are manual-only, so the router cannot call them through the tool's skill mechanism; it
 // reads their SKILL.md by path instead.
-function renderRouter(skillDir, usecases) {
+function renderRouter(skillDir, usecases, team) {
+  const teamNames = team.map((a) => `\`${a.name}\``).join(', ');
   const catalog = usecases
     .map((u) => `- **${u.id}**: ${u.description}\n  File: \`${skillDir}/${skillName(u.id)}/SKILL.md\``)
     .join('\n');
@@ -30,7 +31,7 @@ ${catalog}
    - Two or more fit about equally: ask the user which one, with a single question, and wait.
    - One clearly fits: say which one you chose in one line.
 3. Read that usecase's file and follow it, treating the request as its input. Resolve relative paths in that file from its own directory. Do not call it through a skill tool: usecases are manual-only.
-4. Use the usecase's subagents (\`${skillName('<usecase>')}-<role>\`) only as that usecase instructs.
+4. Use the usecase's subagents (\`${skillName('<usecase>')}-<role>\`)${teamNames ? ` and the davinci team agents (${teamNames})` : ''} only as that usecase instructs.
 `;
 }
 
