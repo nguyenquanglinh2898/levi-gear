@@ -35,7 +35,7 @@ davinci only runs when you ask for it. A prompt that does not start with the dav
 
 Codex has no user-defined `/` commands in a repo, so it uses `$` instead. `davinci init`, `update` and `list` print the right syntax for the tools you installed.
 
-`davinci <request>` is an entry point generated at install time from the installed usecases. It matches the request (in any language) against each usecase description, asks you when two fit equally, and tells you when none fits.
+`davinci <request>` is an entry point generated at install time from the installed usecases. It matches the request (in any language) against each usecase description, runs the best match (naming the runner-up when it was close, so you can call that one directly), and tells you when none fits.
 
 ## The team
 
