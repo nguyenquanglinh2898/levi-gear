@@ -10,7 +10,7 @@ levi is an agentic kit. It installs ready-made workflows (**usecases**) and a sh
 
 ## Guides
 
-- [Usecases](usecases.md): the usecases in the kit, with `brainstorming` in detail
+- [Usecases](usecases.md): the usecases in the kit, with `brainstorming` and `spec-writing` in detail
 - [The team](team.md): the five role agents and the protocol they follow
 - [Updating](updating.md): `levi update`, how your edits are protected, `--force`
 - [Customization](customization.md): adapt installed files to your project
