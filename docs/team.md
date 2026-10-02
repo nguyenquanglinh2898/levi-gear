@@ -18,7 +18,7 @@ Installed agent files are named `levi-<role>` (for example `.claude/agents/levi-
 
 Owns the outcome: what gets built, in what order, and whether it is ready for the end user. Does not write code, make technical decisions or call other agents.
 
-- Turns a request into `spec.md`: goal, users, scope, out of scope, user stories, checkable acceptance criteria.
+- Turns a request into a spec (`spec.md`, or a file under `docs/specs/`): goal, users, scope, out of scope, user stories, checkable acceptance criteria. Writes only what is confirmed, and is the only role that creates, edits or deletes specs.
 - Lists every gap that would change what gets built and returns it as a question instead of filling it in.
 - Decides priority and records scope changes with their cost.
 - Records who owns each task in the assignments table of `status.md`. The workflow reads the table and dispatches the agents.
@@ -79,7 +79,9 @@ Tools: the tool's defaults. Model tier: standard.
 Every team agent has the shared protocol (`agents/_team-protocol.md` in the kit) appended to its instructions. Its rules:
 
 - **Do not delegate.** Never spawn or call another agent. If the task needs another role, say so under "Handoffs".
-- **Stay in your role.** Work that belongs to another role goes under "Handoffs", not into your own output.
+- **Stay in your role.** Do only your own role's work, even when another role's task is small or the prompt asks for it. Work that belongs to another role goes under "Handoffs".
+- **Touch only your own files.** Create, edit, move or delete only files your role owns; everything else is read-only. When asked to write a file you do not own, you do not, and say so under "Handoffs".
+- **Specs belong to the PM alone.** Only `levi-pm` may create, edit, move or delete a spec. Every other role reports a spec problem to the PM instead of fixing it.
 - **Hand off through files.** Other members see only what you write. Every decision, artifact and open question goes in the work folder.
 - **Never ask the user directly.** When information is missing, finish what you can and return the questions.
 - **Language.** Artifacts are written in the language of the request, unless the project already uses another one for its docs. Code, identifiers and commit messages stay in English.
@@ -91,14 +93,18 @@ Agents use the folder the workflow gives them. If it gives none, they use `docs/
 
 | File | Owner |
 |---|---|
-| `spec.md` | PM: requirements and acceptance criteria |
+| `spec.md`, `docs/specs/` | PM: requirements and acceptance criteria. No other role writes here |
 | `status.md` | PM: task assignments, progress, decisions, risks, blockers |
+| `docs/brainstorming/` | PM: execution plans |
 | `design/` | Designer: SVG files, HTML prototypes, `design-notes.md` |
 | `architecture.md` | Teamlead: technical design and decisions |
 | `tasks.md` | Teamlead: task breakdown and estimates |
 | `review.md` | Teamlead: code review findings |
+| Database schema, migrations, CI/CD and deployment config | Teamlead |
+| Application code, unit and integration tests, technical docs of the code | Developer |
 | `test-plan.md` | QA: test plan and test cases |
 | `test-report.md` | QA: results, bugs, sign-off |
+| E2E and acceptance tests | QA |
 
 ### Reply format
 
