@@ -4,6 +4,8 @@ An agentic kit for AI agents. Each **usecase** is a self-contained workflow (a s
 
 Requires Node.js 18 or newer. There are no runtime dependencies.
 
+**Full documentation: [docs/](docs/README.md)**: installation, usage, updating, the CLI reference and more.
+
 ## Install into a project
 
 ```bash
