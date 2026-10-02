@@ -121,11 +121,11 @@ Commit messages, branch names and pull requests are written in English, using sh
 
 ## Status
 
-Checked in the real clients (Claude Code 2.1.276 and Codex 0.154.0):
+Checked in the real clients (Claude Code 2.1.276, Codex 0.154.0 and GitHub Copilot CLI 1.0.91):
 
 - The installed skills and agents are picked up.
 - A prompt without the levi command does not use levi.
-- `/levi` (Claude Code) and `$levi` (Codex) route a request to the matching usecase.
-- The team agents run when a usecase delegates to them, and from a direct call on Codex.
+- `/levi` (Claude Code, Copilot) and `$levi` (Codex) route a request to the matching usecase.
+- The team agents run when a usecase delegates to them (Claude Code and Copilot run the full `brainstorming` flow; Codex runs a team agent when asked).
 
-Not checked yet: GitHub Copilot. Its invocation syntax and manual-only flags follow its documentation.
+Not checked yet: the Copilot extension in VS Code. The Copilot CLI was tested with a non-interactive prompt, so try `/levi` interactively once to see it in the `/` menu.
