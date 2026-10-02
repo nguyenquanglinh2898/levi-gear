@@ -14,7 +14,7 @@ function parseForce(argv) {
 function update(projectDir, argv = []) {
   const existing = config.read(projectDir);
   if (!existing) {
-    console.error(`No ${config.CONFIG_FILE} found. Run "davinci init" first.`);
+    console.error(`No ${config.CONFIG_FILE} found. Run "levi init" first.`);
     process.exitCode = 1;
     return;
   }

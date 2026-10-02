@@ -4,17 +4,17 @@ Every install includes five team agents. Usecases delegate work to them. They ne
 
 | Agent | Role |
 |---|---|
-| `davinci-pm` | Spec and acceptance criteria, scope, task assignments, progress and risks, plan approval, final acceptance and release notes |
-| `davinci-teamlead` | Architecture, database and migrations, conventions, task breakdown and estimates, code review, CI/CD |
-| `davinci-developer` | Implements tasks, writes unit and integration tests |
-| `davinci-designer` | User flows, wireframes, screens in SVG and HTML prototypes, design tokens, states, accessibility, handoff notes |
-| `davinci-qa` | Test plans and test cases from the spec, E2E and automated tests, bug reports, quality sign-off |
+| `levi-pm` | Spec and acceptance criteria, scope, task assignments, progress and risks, plan approval, final acceptance and release notes |
+| `levi-teamlead` | Architecture, database and migrations, conventions, task breakdown and estimates, code review, CI/CD |
+| `levi-developer` | Implements tasks, writes unit and integration tests |
+| `levi-designer` | User flows, wireframes, screens in SVG and HTML prototypes, design tokens, states, accessibility, handoff notes |
+| `levi-qa` | Test plans and test cases from the spec, E2E and automated tests, bug reports, quality sign-off |
 
-Installed agent files are named `davinci-<role>` (for example `.claude/agents/davinci-qa.md`). Each agent file also gets a note appended to its description: the tool should pick it only when a davinci workflow delegates to it, never for other requests.
+Installed agent files are named `levi-<role>` (for example `.claude/agents/levi-qa.md`). Each agent file also gets a note appended to its description: the tool should pick it only when a levi workflow delegates to it, never for other requests.
 
 ## Roles in detail
 
-### davinci-pm
+### levi-pm
 
 Owns the outcome: what gets built, in what order, and whether it is ready for the end user. Does not write code, make technical decisions or call other agents.
 
@@ -27,7 +27,7 @@ Owns the outcome: what gets built, in what order, and whether it is ready for th
 
 Tools: read, edit. Model tier: standard.
 
-### davinci-teamlead
+### levi-teamlead
 
 The most senior developer. Makes the technical decisions. Does not implement tickets unless the workflow asks.
 
@@ -40,7 +40,7 @@ The most senior developer. Makes the technical decisions. Does not implement tic
 
 Tools: read, edit, execute, web. Model tier: strong.
 
-### davinci-developer
+### levi-developer
 
 Implements assigned tasks the way the teamlead designed them and proves they work.
 
@@ -51,7 +51,7 @@ Implements assigned tasks the way the teamlead designed them and proves they wor
 
 Tools: the tool's defaults. Model tier: standard.
 
-### davinci-designer
+### levi-designer
 
 Decides how the product looks and how people move through it.
 
@@ -62,7 +62,7 @@ Decides how the product looks and how people move through it.
 
 Tools: read, edit, web. Model tier: standard.
 
-### davinci-qa
+### levi-qa
 
 Checks that the product does what the spec says, independently of how it was built.
 
@@ -87,7 +87,7 @@ Every team agent has the shared protocol (`agents/_team-protocol.md` in the kit)
 
 ### The work folder
 
-Agents use the folder the workflow gives them. If it gives none, they use `docs/davinci/<short-slug>/` at the project root. Each file has one owner; edit only your own files and read the others as input.
+Agents use the folder the workflow gives them. If it gives none, they use `docs/levi/<short-slug>/` at the project root. Each file has one owner; edit only your own files and read the others as input.
 
 | File | Owner |
 |---|---|
@@ -116,4 +116,4 @@ The workflow reads this report to decide what to do next and what to ask you.
 
 ## Changing the team
 
-The agent files are installed into your project, so you can edit them: add your test conventions to `davinci-qa`, your stack to `davinci-developer`. `davinci update` keeps those edits. See [Customization](customization.md).
+The agent files are installed into your project, so you can edit them: add your test conventions to `levi-qa`, your stack to `levi-developer`. `levi update` keeps those edits. See [Customization](customization.md).

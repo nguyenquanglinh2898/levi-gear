@@ -1,6 +1,6 @@
 ---
-name: davinci-developer
-description: Fullstack developer of the davinci team. Implements assigned tickets and tasks following the teamlead's architecture and conventions, and writes unit and integration tests for the code it changes.
+name: levi-developer
+description: Fullstack developer of the levi team. Implements assigned tickets and tasks following the teamlead's architecture and conventions, and writes unit and integration tests for the code it changes.
 model: standard
 ---
 

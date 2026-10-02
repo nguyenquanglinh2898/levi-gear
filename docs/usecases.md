@@ -1,6 +1,6 @@
 # Usecases
 
-A usecase is a self-contained workflow, installed as a skill named `davinci-<id>`. This page lists the usecases in the kit. Run `npx davinci@latest list` for the list in the version you have.
+A usecase is a self-contained workflow, installed as a skill named `levi-<id>`. This page lists the usecases in the kit. Run `npx levi-gear@latest list` for the list in the version you have.
 
 | Usecase | What it does |
 |---|---|
@@ -11,7 +11,7 @@ To write your own, see [Authoring usecases](authoring-usecases.md).
 ## brainstorming
 
 ```text
-/davinci-brainstorming <problem or idea to brainstorm>
+/levi-brainstorming <problem or idea to brainstorm>
 ```
 
 Brainstorm any problem with the PM and the teamlead and end up with a plan. The problem can be anything the team could work on: a feature, a refactor, a migration, a process change.
@@ -26,15 +26,15 @@ One file, `docs/brainstorming/<slug>.md`, written in the language of your reques
 # Export orders as CSV
 
 - **Total estimate:** 14.5 hours
-- **Agents:** davinci-pm, davinci-teamlead, davinci-developer, davinci-qa
+- **Agents:** levi-pm, levi-teamlead, levi-developer, levi-qa
 
 ## Tasks
 
 | # | Task | Agent | Estimate (h) | Depends on |
 |---|---|---|---|---|
-| 1 | Define the CSV columns and limits | davinci-pm | 1 | - |
-| 2 | Design the export endpoint | davinci-teamlead | 2 | 1 |
-| 3 | Implement the endpoint with tests | davinci-developer | 6 | 2 |
+| 1 | Define the CSV columns and limits | levi-pm | 1 | - |
+| 2 | Design the export endpoint | levi-teamlead | 2 | 1 |
+| 3 | Implement the endpoint with tests | levi-developer | 6 | 2 |
 
 ## Notes
 
@@ -54,11 +54,11 @@ The table above is illustrative. A real plan also includes design, review, QA an
 |---|---|---|
 | 1. Intake | workflow | Reads your request, derives the slug. An empty request makes it ask what to brainstorm. |
 | 2. Find the spec | workflow | Looks in `docs/specs/` for a file matching the problem. One clear match is used as the basis; several plausible ones make it ask you; none means the PM frames the problem itself. |
-| 3. Frame | `davinci-pm` | With a spec: reads it and returns only the gaps that matter. Without: writes a short `brief.md` (goal, scope, what done looks like, open questions). |
-| 4. Explore | `davinci-teamlead` | Writes two or three genuinely different approaches with trade-offs and a recommendation, and lists the forks only you can decide. |
+| 3. Frame | `levi-pm` | With a spec: reads it and returns only the gaps that matter. Without: writes a short `brief.md` (goal, scope, what done looks like, open questions). |
+| 4. Explore | `levi-teamlead` | Writes two or three genuinely different approaches with trade-offs and a recommendation, and lists the forks only you can decide. |
 | 5. Ask you once | workflow | Merges the questions from steps 3 and 4 and asks them in one round, each with two to four options and the recommended one first. |
 | 6. Finalize | PM and teamlead | The teamlead picks the approach and writes the task breakdown; the PM folds your answers into the brief. |
-| 7. Plan | `davinci-pm` | Checks that every goal and done-criterion is covered by a task, decides the owner of each task and writes the plan. |
+| 7. Plan | `levi-pm` | Checks that every goal and done-criterion is covered by a task, decides the owner of each task and writes the plan. |
 | 8. Review (hard plans) | fresh agent calls | Plans with more than 10 tasks get one independent review by the teamlead and then the PM. See below. |
 | 9. Clean up | workflow | Deletes the scratch files. Only the plan is left. |
 | 10. Report | workflow | Tells you the plan path, the spec used, the total hours, the agents, and any assumption taken. |
@@ -73,7 +73,7 @@ If your project keeps specs in `docs/specs/`, brainstorming reads the matching o
 
 ### Scratch files
 
-During the run, the agents use `docs/davinci/<slug>/`:
+During the run, the agents use `docs/levi/<slug>/`:
 
 | File | Owner | Purpose |
 |---|---|---|

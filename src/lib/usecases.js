@@ -3,7 +3,7 @@ const path = require('path');
 const { parse } = require('./frontmatter');
 const { PREFIX, readAgent, loadTeam } = require('./agents');
 
-const ROUTER_NAME = 'davinci';
+const ROUTER_NAME = 'levi';
 const KIT_DIR = path.join(__dirname, '..', '..', 'usecases');
 
 function skillName(id) {
@@ -38,7 +38,7 @@ function load(id) {
 }
 
 // Every agent name must be unique across the team and all usecases, and a usecase id must not
-// reuse a team role, or `davinci-<id>` would name both a skill and an agent.
+// reuse a team role, or `levi-<id>` would name both a skill and an agent.
 function checkNames(usecases, team) {
   const seen = new Set();
   for (const agent of [...team, ...usecases.flatMap((u) => u.agents)]) {
