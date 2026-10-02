@@ -1,9 +1,9 @@
 {
-  "name": "davinci",
+  "name": "levi-gear",
   "version": "0.1.0",
   "description": "An agentic kit: Agent Skills for Claude Code, Codex and Copilot, installable via npm",
   "bin": {
-    "davinci": "./bin/davinci.js"
+    "levi": "./bin/levi.js"
   },
   "files": [
     "agents",

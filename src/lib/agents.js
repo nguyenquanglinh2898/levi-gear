@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { parse } = require('./frontmatter');
 
-const PREFIX = 'davinci-';
+const PREFIX = 'levi-';
 const TEAM_DIR = path.join(__dirname, '..', '..', 'agents');
 // Files in agents/ starting with "_" are not agents: they are appended to every team agent.
 const PARTIAL = '_';

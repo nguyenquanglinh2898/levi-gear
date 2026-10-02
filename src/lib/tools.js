@@ -21,10 +21,10 @@ function skillDirs(tools) {
 const CODEX_SKILL_DIR = '.agents/skills';
 const CODEX_POLICY = 'policy:\n  allow_implicit_invocation: false\n';
 
-// Subagents are picked from their description, so scope them to davinci to keep the agent
-// from reaching for them on requests that did not go through davinci.
+// Subagents are picked from their description, so scope them to levi to keep the agent
+// from reaching for them on requests that did not go through levi.
 function agentDescription(agent) {
-  const by = agent.owner ? `the ${agent.owner} workflow` : 'a davinci workflow';
+  const by = agent.owner ? `the ${agent.owner} workflow` : 'a levi workflow';
   const text = /[.!?]$/.test(agent.description) ? agent.description : `${agent.description}.`;
   return `${text} Used only when ${by} delegates to it; never select it for other requests.`;
 }
@@ -85,7 +85,7 @@ function invocationHelp(tools) {
   return tools
     .map((tool) => {
       const { label, invoke } = TOOL_INFO[tool];
-      return `  ${label.padEnd(11)} ${invoke}davinci <request>    ${invoke}davinci-<usecase> <request>`;
+      return `  ${label.padEnd(11)} ${invoke}levi <request>    ${invoke}levi-<usecase> <request>`;
     })
     .join('\n');
 }

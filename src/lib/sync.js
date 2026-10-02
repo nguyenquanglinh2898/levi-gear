@@ -25,8 +25,8 @@ function readHash(abs) {
   return fs.existsSync(abs) && fs.statSync(abs).isFile() ? sha(fs.readFileSync(abs)) : null;
 }
 
-// Decides what to do with one file davinci wants to have. The recorded hash tells whether the
-// user changed it since davinci wrote it; a changed file is never overwritten without force.
+// Decides what to do with one file levi wants to have. The recorded hash tells whether the
+// user changed it since levi wrote it; a changed file is never overwritten without force.
 function planWanted(p, wanted, recorded, diskHash, forced) {
   const newHash = sha(wanted.content);
   const base = { path: p, group: wanted.group, newHash, recorded };
@@ -84,8 +84,8 @@ function apply(projectDir, actions) {
   }
 }
 
-// What .davinci.json should remember: the hash of each file as davinci last wrote it. A file
-// the user changed keeps its old hash so it stays flagged; a path davinci never owned is not tracked.
+// What .levi.json should remember: the hash of each file as levi last wrote it. A file
+// the user changed keeps its old hash so it stays flagged; a path levi never owned is not tracked.
 function recordFiles(actions, ids) {
   const config = { usecases: {}, router: { files: {} }, team: { files: {} } };
   for (const id of ids) config.usecases[id] = { files: {} };

@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const CONFIG_FILE = '.davinci.json';
+const CONFIG_FILE = '.levi.json';
 
 // Early configs listed files as an array; hashes are unknown there, so each file reads as null.
 function normalize(entry) {

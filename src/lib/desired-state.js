@@ -6,7 +6,7 @@ const { setField } = require('./frontmatter');
 const { renderRouter } = require('./router');
 
 // Group keys say which part of the kit a file belongs to; they decide where its hash is
-// recorded in .davinci.json.
+// recorded in .levi.json.
 const usecaseGroup = (id) => `usecase:${id}`;
 
 // Relative posix paths of every file under `dir`, leaving out the top-level agents/ folder
@@ -23,7 +23,7 @@ function put(out, rel, content, group) {
   out.set(rel, { content: Buffer.from(content), group });
 }
 
-// Every davinci skill runs only when the user invokes it: Claude Code and Copilot read the
+// Every levi skill runs only when the user invokes it: Claude Code and Copilot read the
 // frontmatter flag, Codex reads agents/openai.yaml (only written where Codex looks).
 function addSkill(out, usecase, dir) {
   const root = path.posix.join(dir, skillName(usecase.id));
@@ -42,7 +42,7 @@ function addAgents(out, agents, tools, group) {
   }
 }
 
-// The `davinci` entry point is generated from whatever usecases are installed.
+// The `levi` entry point is generated from whatever usecases are installed.
 function addRouter(out, usecases, team, tools) {
   if (!usecases.length) return;
   for (const dir of skillDirs(tools)) {

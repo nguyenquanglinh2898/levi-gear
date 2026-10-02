@@ -4,9 +4,9 @@ const { list } = require('./commands/list');
 const { status } = require('./commands/status');
 const { kitVersion } = require('./lib/usecases');
 
-const HELP = `davinci ${kitVersion()}
+const HELP = `levi ${kitVersion()}
 
-Usage: davinci <command>
+Usage: levi <command>
 
 Commands:
   init [usecase...] [--tools claude,codex,copilot]

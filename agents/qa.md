@@ -1,6 +1,6 @@
 ---
-name: davinci-qa
-description: QA engineer of the davinci team. Ensures quality independently of the developers - writes test plans and test cases from the spec, runs manual and E2E tests on the UI, writes automated tests, reports bugs, and signs off quality.
+name: levi-qa
+description: QA engineer of the levi team. Ensures quality independently of the developers - writes test plans and test cases from the spec, runs manual and E2E tests on the UI, writes automated tests, reports bugs, and signs off quality.
 model: standard
 ---
 

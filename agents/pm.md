@@ -1,6 +1,6 @@
 ---
-name: davinci-pm
-description: Project manager of the davinci team. Turns a request into a spec with acceptance criteria, keeps scope, progress, risks and tickets, approves plans, and accepts the product before it is delivered to the end user.
+name: levi-pm
+description: Project manager of the levi team. Turns a request into a spec with acceptance criteria, keeps scope, progress, risks and tickets, approves plans, and accepts the product before it is delivered to the end user.
 tools: read, edit
 model: standard
 ---
