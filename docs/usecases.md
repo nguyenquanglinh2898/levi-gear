@@ -44,6 +44,7 @@ Chosen approach, what was rejected, assumptions, the riskiest task.
 - The **total** is the sum of the task estimates. It is agent working time, not calendar time, so parallel tasks are still added up.
 - An **estimate** is the hours the assigned agent needs, including checking its own work, in steps of 0.5 hours. It does not include waiting for you.
 - **Agents** lists each agent that owns at least one task, once.
+- **Depends on** lists only dependencies that cannot be removed. Tasks are cut to be as independent as possible so that they can run in parallel; when several tasks need the same thing (a data model, an interface, a shared component), it becomes one small foundation task that the others depend on, instead of a chain of tasks waiting on each other.
 - **Notes** appears only when there is something to add, and never holds an undecided point.
 
 The table above is illustrative. A real plan also includes design, review, QA and acceptance tasks, not only implementation.
@@ -57,7 +58,7 @@ The table above is illustrative. A real plan also includes design, review, QA an
 | 3. Frame | `levi-pm` | With a spec: reads it and returns only the gaps that matter. Without: writes a short `brief.md` (goal, scope, what done looks like, open questions). |
 | 4. Explore | `levi-teamlead` | Writes two or three genuinely different approaches with trade-offs and a recommendation, and lists the forks only you can decide. |
 | 5. Ask you once | workflow | Merges the questions from steps 3 and 4 and asks them in one round, each with two to four options and the recommended one first. |
-| 6. Finalize | PM and teamlead | The teamlead picks the approach and writes the task breakdown; the PM folds your answers into the brief. |
+| 6. Finalize | PM and teamlead | The teamlead picks the approach and writes the task breakdown, cut so tasks are as independent as possible; the PM folds your answers into the brief. |
 | 7. Plan | `levi-pm` | Checks that every goal and done-criterion is covered by a task, decides the owner of each task and writes the plan. |
 | 8. Review (hard plans) | fresh agent calls | Plans with more than 10 tasks get one independent review by the teamlead and then the PM. See below. |
 | 9. Clean up | workflow | Deletes the scratch files. Only the plan is left. |
@@ -65,7 +66,7 @@ The table above is illustrative. A real plan also includes design, review, QA an
 
 ### Hard plans get a second review
 
-A plan with more than 10 tasks is treated as a hard ticket. It is reviewed once more by fresh agent calls that see only the spec (or brief) and the plan, never the conversation. First the teamlead reviews task size, dependencies, estimates and technical risk. Then the PM reviews coverage, ownership and totals. The reviewers decide; they do not hand points back as questions. There is no second round.
+A plan with more than 10 tasks is treated as a hard ticket. It is reviewed once more by fresh agent calls that see only the spec (or brief) and the plan, never the conversation. First the teamlead reviews task size, independence, dependencies, estimates and technical risk. Then the PM reviews coverage, ownership and totals. The reviewers decide; they do not hand points back as questions. There is no second round.
 
 ### Specs are read-only
 
