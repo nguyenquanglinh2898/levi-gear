@@ -6,6 +6,9 @@ A usecase is a self-contained workflow, installed as a skill named `levi-<id>`. 
 |---|---|
 | [`brainstorming`](#brainstorming) | Turns a problem or idea into an execution plan: small tasks, an owning agent and an hour estimate for each |
 | [`spec-writing`](#spec-writing) | Writes or updates a spec with the PM: it asks about everything unclear first and writes only what you confirmed |
+| [`design`](#design) | Draws SVG designs with the Designer from a text description, images or videos you upload, or both |
+| [`create-feature`](#create-feature) | Builds a feature spec first and test first: tests and scenarios from the spec are locked, and the code is fixed until the tests pass, the teamlead approves, and every scenario passes end to end |
+| [`fix-bug`](#fix-bug) | Fixes a bug in merged code: the developer clarifies it with you, then fixes it test first while QA writes scenarios; the teamlead reviews and QA tests end to end until everything passes |
 
 To write your own, see [Authoring usecases](authoring-usecases.md).
 
@@ -156,3 +159,175 @@ If the goal, the users or the core scope are still unconfirmed when the rounds e
 ### Only the PM touches specs
 
 Nobody else writes specs: the developer, designer, QA and teamlead only read them, and they report problems they find to the PM. This is part of the [team protocol](team.md#the-protocol).
+
+## design
+
+```text
+/levi-design <what to design, and the images or videos to base it on>
+```
+
+Create UI designs as SVG files with the Designer. Describe what you want in plain text, attach images or videos (screenshots, mockups, sketches, screen recordings), or both.
+
+Fits requests such as "design a login screen", "recreate this mockup as SVG" and "design the app shown in this video".
+
+### What you get
+
+A folder `docs/designs/<slug>/` with one SVG file per screen, state or breakpoint. `<slug>` is a short kebab-case English name, for example `login-screen`.
+
+```text
+docs/designs/login-screen/
+  login.svg
+  login-error.svg
+  login-mobile.svg
+```
+
+- Each file is valid, self-contained SVG: one artboard, a `<title>`, named groups, colors and type defined once as tokens and shared by every file in the folder. No embedded raster images, external fonts or scripts.
+- Texts and data come from your request and references, exactly as given. Anything else is a marked placeholder, never an invention.
+- Your words decide how an image is used. By default it is **recreated** (layout, texts, colors, icons); say "in this style" and it is only a **style reference**.
+- Photos in a reference become labeled placeholders, and text uses a system font stack.
+
+### How it works
+
+| Step | Who | What happens |
+|---|---|---|
+| 1. Intake | workflow | Reads your text and attachments, derives the slug. With neither text nor attachment it asks what to design. |
+| 2. Find the context | workflow | Looks in `docs/designs/` for an existing design to update, and in `docs/specs/` for a spec to use as read-only context. |
+| 3. Prepare the references | workflow | Images with a path are passed as they are. An image that exists only in the conversation is written down as a plain description. A video is turned into up to 12 key frames with ffmpeg. |
+| 4. Draw | `levi-designer` | Decides the list of files, then draws them from the references, keeping one visual language across all of them. |
+| 5. Check | workflow | Runs a checker that rejects invalid SVG, raster images, external references and scripts, and renders each file to a PNG when a renderer is installed (`rsvg-convert`, `inkscape` or headless Chrome) to look for cut-off or overlapping content and for differences from the reference. |
+| 6. Fix | `levi-designer` | One pass on the problems found. There is no second pass; what is still wrong is reported. |
+| 7. Ask you | workflow | Asks the designer's questions in one round, only those that change the design. Without questions, assumptions go into the report. |
+| 8. Clean up and report | workflow | Deletes frames, descriptions and renders. Tells you the files, assumptions and what could not be reproduced. |
+
+### Requirements
+
+- Videos need `ffmpeg`. Without it, the workflow asks you for screenshots of the key screens instead of guessing what the video shows.
+- The render check needs `rsvg-convert`, `inkscape` or Chrome/Chromium. Without one it is skipped and the report says so.
+- The checker needs `python3` (or `xmllint` as a fallback).
+
+### Specs are read-only
+
+If your project keeps specs in `docs/specs/`, the matching one is used as context. The design never creates or edits anything there.
+
+### Scratch files
+
+During the run the workflow uses `docs/levi/<slug>/`: `frames/` (video key frames), `references.md` (descriptions of images that have no file) and `render/` (PNG renders). All are deleted at the end. Your uploaded files are never touched.
+
+## create-feature
+
+```text
+/levi-create-feature <the feature to build, and the spec if you have one>
+```
+
+Build a feature end to end, the spec-driven way: the spec decides, the tests and test scenarios are written from it, and the code is changed until it satisfies them. Tests and scenarios are never changed to make them pass.
+
+Fits requests such as "build feature X", "implement X" and "add X to the app".
+
+Installing it also installs `spec-writing`, `brainstorming` and `design`, which it reuses.
+
+### What you get
+
+- The feature's code (and migrations, when it needs them), left uncommitted in your working tree.
+- Unit and feature tests in the folders your test framework uses, covering every acceptance criterion of the spec.
+- `docs/tests/<slug>.md`: test scenarios numbered from 1, each with the criteria it covers, steps, the expected result, and its `PASS` or `FAIL` result with evidence from the end-to-end run.
+- The spec, brainstorming plan and designs, when they had to be created.
+
+### How it works
+
+**Prepare, with you.**
+
+| Step | Who | What happens |
+|---|---|---|
+| 1. Spec | workflow, `spec-writing` | Uses the spec you give. Otherwise it looks in `docs/specs/` and asks you to confirm a likely match. If you reject it, or there is none, the PM writes a new spec with the `spec-writing` flow. A Draft spec must be settled first: its open questions are answered or moved out of scope. |
+| 2. Plan | workflow, `brainstorming` | Uses the matching plan in `docs/brainstorming/`, or runs the `brainstorming` flow. |
+| 3. Designs | workflow, `design` | When the feature has a UI: uses the matching folder in `docs/designs/`, or runs the `design` flow. |
+
+**Implement, without you.** On Claude Code this runs as a Workflow, where every step is a fresh, independent subagent that sees only the files it is given. On Codex and Copilot the same steps run one after another as subagent calls.
+
+| Step | Who | What happens |
+|---|---|---|
+| 4. Execution plan | `levi-teamlead` | Fixes the interfaces tests and code share, the test framework and commands, how to start the app, the test groups (covering every criterion) and the implementation batches. |
+| 5. Tests | `levi-developer`, reviewed by `levi-teamlead` | Unit and feature tests, written from the spec in parallel groups. They run once before any code exists (they should fail), then a fresh teamlead reviews them against the spec until it approves. |
+| 5. Scenarios | `levi-qa`, reviewed by `levi-pm` | Written from the spec at the same time, without reading code or tests. A fresh PM reviews them against the spec until it approves. |
+| 6. Lock | workflow | Copies and hashes the tests and scenarios. From here on they are the definition of done. |
+| 7. Build | `levi-developer`, `levi-teamlead` | Implements the batches, tasks of a batch in parallel. |
+| 8. Gate | workflow | Restores any locked file that was changed, runs the new tests and the whole suite. A failure goes back to the developer. |
+| 9. Review | `levi-teamlead` | Once the tests pass, reviews the change against the spec. Critical and warning findings go back to their owner. |
+| 10. E2E | `levi-qa` | After the review approves, starts the app and runs every scenario in a headless browser (through the API or CLI when there is no UI), writing PASS or FAIL. Failing cases go back to the developer, and steps 7 to 10 repeat until the review approves and every scenario passes. |
+
+### Tests are locked
+
+The developer's tests and QA's scenarios are checked against the spec by a fresh reviewer before anything is built, so a failure later can only mean the code is wrong. After the lock, every round verifies the hashes: a changed or deleted test is restored and the developer is told. Only the `Status` and `Evidence` lines of the scenarios change, when QA runs them.
+
+### When it stops
+
+| Result | Meaning | What happens |
+|---|---|---|
+| Spec questions | The spec is silent or unclear on a point the tests need | You answer, the PM updates the spec, and implementation starts again |
+| Blocked | Something outside the code: the app cannot start, a service or credential is missing | You get the stage and what to provide; the work folder is kept |
+| Stalled | 10 build rounds and something still fails | You get the last failures; in the same Claude Code session the run can be resumed with more rounds |
+
+### Requirements
+
+- A test framework the developer can run from the command line; if the project has none, the teamlead picks one and the developer sets it up.
+- For E2E on a UI: the project's E2E runner (such as Playwright) or a browser tool the QA agent can use, and an app that starts locally.
+
+### Scratch files
+
+`docs/levi/<slug>/` holds `tasks.md` (the execution plan), `review.md` (the code review) and `locked/` (the snapshot of the locked files). It is deleted when the feature is done, and kept when the run stops.
+
+## fix-bug
+
+```text
+/levi-fix-bug <what goes wrong, how to reproduce it, and screenshots or logs if you have them>
+```
+
+Fix a bug with the team. The developer first lists what is unclear and you confirm it; then the developer investigates and fixes it test first while QA writes the scenarios, the teamlead reviews every fix, and QA tests it end to end. Tests and scenarios are never changed to make them pass.
+
+Fits requests such as "fix this bug", "X is broken" and "X shows the wrong value".
+
+Installing it also installs `create-feature` (and what that one requires): `fix-bug` uses its test lock script.
+
+### What counts as a bug
+
+A bug is a defect in feature code that is already **merged into the base branch**. When the code at fault is still on a branch that is not merged, or not committed (for example the output of `create-feature` you are checking), asking to change it is a revision of that work, not a bug. `fix-bug` checks this with `git blame` on the lines of the root cause and stops when they are not merged.
+
+### What you get
+
+- The fix, left uncommitted in your working tree.
+- Unit and feature tests that failed on the bug and pass now: new ones, or the existing ones when they already covered it.
+- `docs/tests/bugs/<slug>.md`: the bug's test scenarios numbered from 1, the first following the steps of your report, each with its `PASS` or `FAIL` result.
+
+### How it works
+
+**Clarify, with you.**
+
+| Step | Who | What happens |
+|---|---|---|
+| 1. Intake | workflow | Reads the report and attachments, checks whether all code is merged into the base branch, writes the report down, and finds the spec and designs of the feature. |
+| 2. Clarify | `levi-developer` | Lists every unclear point that would change the fix or its tests, with options. You answer; the answers are kept word for word. Up to three rounds, until nothing is open. If the code does what the spec says, it is a change, not a bug, and the run stops. |
+
+**Fix, without you.** On Claude Code this runs as a Workflow of fresh, independent subagents; on Codex and Copilot the same steps run one after another.
+
+| Step | Who | What happens |
+|---|---|---|
+| 3. Scenarios | `levi-qa` | At the same time as step 4, without reading code: writes the scenarios, which are locked at once. Then waits for the review to approve. |
+| 4. Investigate, test first | `levi-developer` | Finds the root cause and makes sure unit and feature tests fail because of the bug: existing ones if they cover it, otherwise new ones. |
+| 5. Merge check and lock | workflow | `git blame` on the root-cause lines (unmerged code stops the run), then the tests that cover the bug are locked. |
+| 6. Fix | `levi-developer` | Fixes the root cause until the bug's tests and the whole suite pass. |
+| 7. Review | `levi-teamlead` | Reviews the fix. Critical and warning findings go back to the developer. |
+| 8. E2E | `levi-qa` | After the approval, runs every scenario in a headless browser. Failing cases go back to the developer, and steps 6 to 8 repeat until the review approves and every scenario passes. |
+
+### When it stops
+
+| Result | Meaning |
+|---|---|
+| Not a bug | The code does what the spec and your confirmed points expect |
+| Unmerged | The root cause is in code that is not merged: it is a revision of that work. Nothing is changed |
+| Questions | An agent found a point still open; you answer and the fix runs again |
+| Blocked | The app cannot start, a service or credential is missing, or no test could be made to fail on the bug |
+| Stalled | 10 rounds and something still fails; in the same Claude Code session the run can be resumed with more rounds |
+
+### Scratch files
+
+`docs/levi/<slug>/` holds `report.md` (your report), `confirmed.md` (the questions and your answers), `investigation.md` (root cause and plan), `review.md` (the review), `locked/` (the snapshot of the locked files) and, for a video, `frames/`. It is deleted when the fix is done, and kept when the run stops.

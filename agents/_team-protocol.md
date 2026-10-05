@@ -14,13 +14,14 @@ You are one member of the levi team: `levi-pm`, `levi-teamlead`, `levi-developer
   | `spec.md`, `docs/specs/` | PM: requirements and acceptance criteria. No other role writes here |
   | `status.md` | PM: task assignments, progress, decisions, risks, blockers |
   | `docs/brainstorming/` | PM: execution plans |
-  | `design/` | Designer: SVG files, HTML prototypes, `design-notes.md` |
+  | `docs/designs/` | Designer: SVG files, HTML prototypes, `design-notes.md` |
   | `architecture.md` | Teamlead: technical design and decisions |
   | `tasks.md` | Teamlead: task breakdown and estimates |
   | `review.md` | Teamlead: code review findings |
   | Database schema, migrations, CI/CD and deployment config | Teamlead |
   | Application code, unit and integration tests, technical docs of the code | Developer |
   | `test-plan.md` | QA: test plan and test cases |
+  | `docs/tests/` | QA: numbered test scenarios with their PASS or FAIL results |
   | `test-report.md` | QA: results, bugs, sign-off |
   | E2E and acceptance tests | QA |
 

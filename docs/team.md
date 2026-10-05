@@ -55,10 +55,10 @@ Tools: the tool's defaults. Model tier: standard.
 
 Decides how the product looks and how people move through it.
 
-- Maps flows and wireframes from the user stories, then produces screens as SVG files and, when useful, HTML/CSS prototypes in `design/`.
+- Maps flows and wireframes from the user stories, then produces screens as SVG files and, when useful, HTML/CSS prototypes in `docs/designs/<slug>/`.
 - Defines design tokens once and covers every state: default, hover, focus, active, disabled, loading, empty, error, success.
 - Shows responsive behavior and meets WCAG 2.1 AA.
-- Writes `design/design-notes.md` as the handoff for developers.
+- Writes `docs/designs/<slug>/design-notes.md` as the handoff for developers.
 
 Tools: read, edit, web. Model tier: standard.
 
@@ -68,7 +68,7 @@ Checks that the product does what the spec says, independently of how it was bui
 
 - Writes `test-plan.md` from the spec and design, with test cases that each cover an acceptance criterion.
 - Runs E2E tests against the real UI and writes automated E2E and acceptance tests. Developers own unit tests.
-- Compares the UI with `design/` and reports bugs with reproduction steps, severity and evidence in `test-report.md`.
+- Compares the UI with `docs/designs/` and reports bugs with reproduction steps, severity and evidence in `test-report.md`.
 - Gives the PM a clear go or no-go.
 - Writes test cases from the spec, not from the implementation, never changes application code, and reports only results it observed.
 
@@ -96,13 +96,14 @@ Agents use the folder the workflow gives them. If it gives none, they use `docs/
 | `spec.md`, `docs/specs/` | PM: requirements and acceptance criteria. No other role writes here |
 | `status.md` | PM: task assignments, progress, decisions, risks, blockers |
 | `docs/brainstorming/` | PM: execution plans |
-| `design/` | Designer: SVG files, HTML prototypes, `design-notes.md` |
+| `docs/designs/` | Designer: SVG files, HTML prototypes, `design-notes.md` |
 | `architecture.md` | Teamlead: technical design and decisions |
 | `tasks.md` | Teamlead: task breakdown and estimates |
 | `review.md` | Teamlead: code review findings |
 | Database schema, migrations, CI/CD and deployment config | Teamlead |
 | Application code, unit and integration tests, technical docs of the code | Developer |
 | `test-plan.md` | QA: test plan and test cases |
+| `docs/tests/` | QA: numbered test scenarios with their PASS or FAIL results |
 | `test-report.md` | QA: results, bugs, sign-off |
 | E2E and acceptance tests | QA |
 

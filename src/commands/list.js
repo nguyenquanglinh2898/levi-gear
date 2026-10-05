@@ -7,7 +7,8 @@ function list(projectDir) {
   if (!usecases.length) console.log('No usecases in the kit yet.');
   for (const u of usecases) {
     const roles = u.agents.length ? ` [agents: ${u.agents.map((a) => a.name).join(', ')}]` : '';
-    console.log(`${u.id}${roles}\n  ${u.description}`);
+    const requires = u.requires.length ? ` [requires: ${u.requires.join(', ')}]` : '';
+    console.log(`${u.id}${roles}${requires}\n  ${u.description}`);
   }
   if (usecases.length) {
     const installed = config.read(projectDir);

@@ -38,6 +38,7 @@ Installs usecases, the team agents and the `levi` entry point, and writes `.levi
 Behavior:
 
 - Merges with an existing install: usecases already installed stay, named ones are added.
+- Also installs the usecases a named usecase requires (`requires:` in its `SKILL.md`), for example `create-feature` brings `spec-writing`, `brainstorming` and `design`.
 - Never overwrites a file you changed or a path levi did not write; both are reported.
 - Files for a tool you dropped from `--tools` are removed when unchanged.
 - Prints a summary, a file report and the invocation syntax.
@@ -75,7 +76,7 @@ Dry run of `update`. Prints what `update` would add, update and remove, and the 
 levi list
 ```
 
-Prints each usecase of the kit: its id, the usecase's own agents (when it has any) and its description. Then prints the invocation syntax for the tools in your `.levi.json`, or for all three tools when there is none.
+Prints each usecase of the kit: its id, the usecase's own agents and the usecases it requires (when it has any) and its description. Then prints the invocation syntax for the tools in your `.levi.json`, or for all three tools when there is none.
 
 ```text
 brainstorming
