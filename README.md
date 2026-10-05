@@ -51,7 +51,7 @@ Every install includes the team agents from `agents/`. Usecases delegate to them
 | `levi-designer` | User flows, wireframes, screens in SVG and HTML prototypes, design tokens, states, accessibility, handoff notes |
 | `levi-qa` | Test plans and test cases from the spec, E2E and automated tests, bug reports, quality sign-off |
 
-The usecase's skill or workflow runs the team: it calls each member in turn. The PM only decides who owns each task and records it; the workflow follows that. Members hand work to each other through files in a work folder (`docs/levi/<slug>/` by default): `spec.md`, `status.md`, `design/`, `architecture.md`, `tasks.md`, `review.md`, `test-plan.md`, `test-report.md`. The shared rules live in `agents/_team-protocol.md`, which is appended to every team agent.
+The usecase's skill or workflow runs the team: it calls each member in turn. The PM only decides who owns each task and records it; the workflow follows that. Members hand work to each other through files in a work folder (`docs/levi/<slug>/` by default): `spec.md`, `status.md`, `docs/designs/`, `architecture.md`, `tasks.md`, `review.md`, `test-plan.md`, `test-report.md`. The shared rules live in `agents/_team-protocol.md`, which is appended to every team agent.
 
 ## Update
 

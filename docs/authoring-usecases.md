@@ -25,12 +25,17 @@ Frontmatter fields:
 | `name` | yes | Must be exactly `levi-<id>`, where `<id>` is the folder name |
 | `description` | yes | What the usecase does and which requests fit it |
 | `argument-hint` | no | Shown by tools that support it, for example `"<problem or idea>"` |
+| `requires` | no | Comma list of usecase ids this one builds on, for example `spec-writing, brainstorming`. Installing this usecase installs them too |
 
 The installer adds `disable-model-invocation: true` to the installed copy.
 
 The `description` is what the `levi` entry point matches requests against, so state precisely what the usecase does and which requests it fits. English is fine; requests in other languages are matched by meaning.
 
 The body is the workflow. Keep the workflow in this file: the entry point reads it directly, because manual-only skills cannot be called through a skill tool.
+
+To reuse another usecase, list it in `requires` and tell the workflow to read its `SKILL.md` in the sibling folder (`levi-<id>/SKILL.md`) and follow it. Installed skills sit side by side in each tool's skill folder.
+
+A usecase may ship a Claude Code Workflow script (for example `workflow.js`) to run independent subagents from code. The tool calls it by its path in the skill folder. Other tools have no Workflow tool, so `SKILL.md` must also describe the same steps for them to run one by one. See `usecases/create-feature/`.
 
 ## Agents
 
@@ -65,7 +70,8 @@ The kit is loaded and validated before every command writes anything. These fail
 
 - `SKILL.md` missing, or `name` not equal to `levi-<id>`, or `description` missing;
 - an agent whose `name` does not match its file, with no `description`, with an unknown `tools` value or with an unknown `model` tier;
-- the same agent name defined twice, or a usecase id equal to a team role.
+- the same agent name defined twice, or a usecase id equal to a team role;
+- a `requires` entry that names itself or a usecase missing from the kit.
 
 ## Conventions
 

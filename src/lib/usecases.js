@@ -34,7 +34,18 @@ function load(id) {
     throw new Error(`usecases/${id}/SKILL.md: name must be "${skillName(id)}", got "${data.name}"`);
   }
   if (!data.description) throw new Error(`usecases/${id}/SKILL.md: missing description`);
-  return { id, dir, description: data.description, agents: loadAgents(id, dir) };
+  const requires = (data.requires || '').split(',').map((r) => r.trim()).filter(Boolean);
+  return { id, dir, description: data.description, requires, agents: loadAgents(id, dir) };
+}
+
+// A usecase may build on others (`requires:` in its SKILL.md); they must exist in the kit.
+function checkRequires(usecases) {
+  const ids = new Set(usecases.map((u) => u.id));
+  for (const u of usecases) {
+    for (const r of u.requires) {
+      if (r === u.id || !ids.has(r)) throw new Error(`usecases/${u.id}/SKILL.md: requires unknown usecase "${r}"`);
+    }
+  }
 }
 
 // Every agent name must be unique across the team and all usecases, and a usecase id must not
@@ -60,6 +71,7 @@ function loadKit() {
     : [];
   const team = loadTeam();
   checkNames(usecases, team);
+  checkRequires(usecases);
   return { usecases, team };
 }
 

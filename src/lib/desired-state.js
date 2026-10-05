@@ -52,14 +52,26 @@ function addRouter(out, usecases, team, tools) {
   }
 }
 
-// The files a clean install of `ids` for `tools` would contain: Map of project-relative path
-// to { content, group }. Nothing is written here.
+// `ids` plus every usecase they require, directly or not, each once.
+function withRequired(byId, ids) {
+  const all = [];
+  const visit = (id) => {
+    if (all.includes(id)) return;
+    all.push(id);
+    if (byId.has(id)) byId.get(id).requires.forEach(visit);
+  };
+  ids.forEach(visit);
+  return all;
+}
+
+// The files a clean install of `ids` (and what they require) for `tools` would contain: Map of
+// project-relative path to { content, group }. Nothing is written here.
 function build(kit, ids, tools) {
   const byId = new Map(kit.usecases.map((u) => [u.id, u]));
   const out = new Map();
   const missing = [];
   const present = [];
-  for (const id of ids) {
+  for (const id of withRequired(byId, ids)) {
     if (!byId.has(id)) {
       missing.push(id);
       continue;
