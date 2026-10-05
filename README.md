@@ -43,13 +43,15 @@ Codex has no user-defined `/` commands in a repo, so it uses `$` instead. `levi 
 
 Every install includes the team agents from `agents/`. Usecases delegate to them; they never run on their own and never call each other.
 
-| Agent | Role |
-|---|---|
-| `levi-pm` | Spec and acceptance criteria, scope, task assignments, progress and risks, plan approval, final acceptance and release notes |
-| `levi-teamlead` | Architecture, database and migrations, conventions, task breakdown and estimates, code review, CI/CD |
-| `levi-developer` | Implements tasks, writes unit and integration tests |
-| `levi-designer` | User flows, wireframes, screens in SVG and HTML prototypes, design tokens, states, accessibility, handoff notes |
-| `levi-qa` | Test plans and test cases from the spec, E2E and automated tests, bug reports, quality sign-off |
+| Agent | Responsibilities | Owns | Called by |
+|---|---|---|---|
+| `levi-pm` | Writes and updates specs with checkable acceptance criteria (the only role that touches specs); frames problems; decides scope and priority; assigns each task an owner; approves plans against the spec; accepts the product on test evidence and writes release notes | `spec.md`, `docs/specs/`, `status.md`, `docs/brainstorming/` | `spec-writing`, `brainstorming`, `create-feature` |
+| `levi-teamlead` | Designs the architecture and picks the technology; designs the database schema and migrations; sets structure, conventions and API contracts; breaks work into tasks with estimates; reviews code (security by OWASP Top 10, performance and correctness) with a fix for every finding; owns CI/CD | `architecture.md`, `tasks.md`, `review.md`, schema, migrations, CI/CD and deployment config | `brainstorming`, `create-feature`, `fix-bug`, `code-review` |
+| `levi-developer` | Implements tasks as designed; investigates and fixes bugs at the root cause; writes unit and integration tests; runs build, lint and tests before handing off | Application code, unit and integration tests, technical docs of the code | `create-feature`, `fix-bug` |
+| `levi-designer` | Maps user flows and wireframes; draws screens in SVG and HTML prototypes; defines design tokens and every state; covers responsive behavior and accessibility; writes handoff notes | `docs/designs/` | `design`, `create-feature` (for UI work) |
+| `levi-qa` | Writes test plans and numbered test scenarios from the spec, without reading the code; runs E2E tests in a headless browser; writes E2E and acceptance tests; reports bugs and gives the go or no-go | `test-plan.md`, `docs/tests/`, `test-report.md`, E2E and acceptance tests | `create-feature`, `fix-bug` |
+
+Each agent does only its own role's work and writes only the files it owns; work for another role is handed off. The full role descriptions are in [docs/team.md](docs/team.md).
 
 The usecase's skill or workflow runs the team: it calls each member in turn. The PM only decides who owns each task and records it; the workflow follows that. Members hand work to each other through files in a work folder (`docs/levi/<slug>/` by default): `spec.md`, `status.md`, `docs/designs/`, `architecture.md`, `tasks.md`, `review.md`, `test-plan.md`, `test-report.md`. The shared rules live in `agents/_team-protocol.md`, which is appended to every team agent.
 
