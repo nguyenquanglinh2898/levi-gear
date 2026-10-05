@@ -5,12 +5,12 @@ export const meta = {
   phases: [
     { title: 'Plan', detail: 'the teamlead turns the brainstorming plan into an execution plan' },
     { title: 'Tests', detail: 'developer tests and QA scenarios, written apart and reviewed against the spec' },
-    { title: 'Lock', detail: 'snapshot and hash the tests and the scenarios' },
+    { title: 'Lock', detail: 'snapshot and hash the tests, and snapshot the test cases as QA wrote them' },
     { title: 'Build', detail: 'implement, run the tests, review, then E2E; repeat until the review approves and every scenario passes' },
   ],
 }
 
-// args: { slug, feature, spec, plan, designs?, skillDir, maxRounds? } — see the skill's SKILL.md.
+// args: { slug, feature, spec, plan, designs?, featureId?, testBase?, skillDir, maxRounds? } — see the skill's SKILL.md.
 const A = args || {}
 const absent = ['slug', 'feature', 'spec', 'plan', 'skillDir'].filter((k) => !A[k])
 if (absent.length) return { status: 'error', message: `missing args: ${absent.join(', ')}` }
@@ -18,8 +18,16 @@ if (absent.length) return { status: 'error', message: `missing args: ${absent.jo
 const WORK = `docs/levi/${A.slug}`
 const TASKS = `${WORK}/tasks.md`
 const REVIEW = `${WORK}/review.md`
-const SCENARIOS = `docs/tests/${A.slug}.md`
+// QA's test cases, written and run with the test case guide of levi-generate-test-scenarios.
+const FEATURE_ID = A.featureId || A.slug.toUpperCase()
+const TEST_BASE = A.testBase || `docs/tests/${A.slug}-test-cases`
+const SCENARIOS = `${TEST_BASE}.md`
+const SCENARIO_FILES = [SCENARIOS, `${TEST_BASE}.xlsx`]
+const CASES = `${WORK}/test-cases.json`
+const TEST_GUIDE = `${A.skillDir}/../levi-generate-test-scenarios/references/test-case-guide.md`
 const LOCK_DIR = `${WORK}/locked`
+// Only QA changes its test cases: a snapshot taken after each QA step restores changes made by anyone else.
+const QA_SNAPSHOT = `${WORK}/qa-snapshot`
 const LOCK = `node ${A.skillDir}/scripts/lock-tests.mjs`
 const REVIEW_GUIDE = `${A.skillDir}/../levi-code-review/references/review-guide.md`
 const MAX_TEST_REVIEWS = 5
@@ -33,7 +41,7 @@ const CONTEXT = [
   `Work folder: ${WORK}`,
 ].join('\n')
 
-const LOCKED_RULES = (tests) => `Locked files: the tests (${tests.join(', ')}) and the scenarios in ${SCENARIOS}. They were checked against the spec and are the definition of done. Never edit, delete, rename, skip or weaken any of them, and never change test configuration to leave them out. A locked file you change is restored automatically and your work is wasted. When a test fails, the code is wrong: fix the code, at the root cause, without special-casing test inputs.`
+const LOCKED_RULES = (tests) => `The test cases in ${SCENARIO_FILES.join(' and ')} belong to QA: do not edit them; a change by anyone else is undone. Locked files: the tests (${tests.join(', ')}). They were checked against the spec and are the definition of done. Never edit, delete, rename, skip or weaken any of them, and never change test configuration to leave them out. A locked file you change is restored automatically and your work is wasted. When a test fails, the code is wrong: fix the code, at the root cause, without special-casing test inputs.`
 
 // ---- schemas ----
 
@@ -94,7 +102,7 @@ const BASE = obj({ head: { type: 'string' }, dirty: STRINGS })
 const E2E = obj({
   status: STATUS,
   summary: { type: 'string' },
-  results: { type: 'array', items: obj({ n: { type: 'integer' }, result: { type: 'string', enum: ['PASS', 'FAIL'] }, evidence: { type: 'string' } }) },
+  results: { type: 'array', items: obj({ id: { type: 'string' }, result: { type: 'string', enum: ['PASS', 'FAIL'] }, evidence: { type: 'string' } }) },
 })
 const IMPL = obj({ status: STATUS, summary: { type: 'string' }, files: STRINGS, blockers: STRINGS })
 const CODE_REVIEW = obj({
@@ -244,31 +252,20 @@ async function qaScenarios() {
   let written = await agent(
     `${CONTEXT}
 
-Write the test scenarios of this feature to ${SCENARIOS}, from the spec${A.designs ? ' and the designs' : ''}. Do not read the application code or the developer's tests.
+Write the test cases of this feature, following your test case guide, ${TEST_GUIDE} ("The source rule" and "Writing test cases").
 
-Format:
+Sources (your only ones): the spec ${A.spec}${A.designs ? ` and the designs in ${A.designs}` : ''}. Do not read the application code or the developer's tests.
+Feature ID: ${FEATURE_ID}
+Cases file: ${CASES}
+Output base: ${TEST_BASE}. If its files exist from an earlier run, they are yours: get the cases back as the guide's "Changing test cases" says and bring them in line with the spec.
 
-# Test scenarios: <feature name>
+On top of the guide:
+- Every acceptance criterion in ${plan.criteria.join(', ')} is in the refs of at least one case.
+- Each case can be run end to end ${plan.hasUi ? 'in a browser' : 'through the API or the CLI'} by someone who has only the rendered file and the running app (${plan.app.url}).
+- Do not record results: they are recorded when the cases are run, after the code is built.
+- The spec is Ready, so it should settle everything a case needs. Put every ambiguity you find into questions as well.
 
-- **Spec:** ${A.spec}
-- **Status:** -
-
-## 1. <short title>
-- **Covers:** <criterion IDs>
-- **Preconditions:** <state, data, user role>
-- **Steps:**
-  1. <one action>
-- **Expected:** <observable result, taken from the spec>
-- **Status:** -
-- **Evidence:** -
-
-Rules:
-- Number the scenarios from 1 with no gaps. Every acceptance criterion in ${plan.criteria.join(', ')} is covered by at least one scenario. Cover the happy path, edge cases, invalid input, error states and permissions the spec states, and nothing it does not.
-- Each scenario can be run end to end ${plan.hasUi ? 'in a browser' : 'through the API or the CLI'} by someone who has only this file and the running app (${plan.app.url}).
-- Leave every Status and Evidence as "-". They are filled in when the scenarios are run: PASS or FAIL, and what was observed.
-- After this step the file is locked: the code will have to pass the scenarios and nobody may change them. Get them right now.
-
-Return the number of scenarios as scenarioCount.`,
+Return the number of cases as scenarioCount.`,
     { label: 'qa:scenarios', phase: 'Tests', agentType: 'levi-qa', schema: WRITTEN },
   )
   if (!written || written.status === 'BLOCKED') return { stop: 'blocked', detail: written ? written.summary : 'QA did not write the scenarios' }
@@ -279,10 +276,10 @@ Return the number of scenarios as scenarioCount.`,
     const review = await agent(
       `${CONTEXT}
 
-Review the test scenarios in ${SCENARIOS} against the spec, as an independent reviewer. Check that:
-- every acceptance criterion in ${plan.criteria.join(', ')} is covered by at least one scenario;
-- every Expected result matches the spec exactly, and no scenario expects behavior the spec does not state;
-- the scenarios are numbered 1 to N with no gaps, follow the file's format, and can each be run end to end from the file alone.
+Review the test cases in ${SCENARIOS} against the spec, as an independent reviewer. Check that:
+- every acceptance criterion in ${plan.criteria.join(', ')} is covered by at least one case (its Notes name the criteria it traces to);
+- every Expected Result matches the spec exactly, and no case expects behavior the spec does not state;
+- each case can be run end to end from the file alone.
 
 The file belongs to QA: do not edit it. Approve only when nothing is left to change.`,
       { label: `pm:review-scenarios-${i}`, phase: 'Tests', agentType: 'levi-pm', schema: SPEC_REVIEW },
@@ -293,7 +290,7 @@ The file belongs to QA: do not edit it. Approve only when nothing is left to cha
     if (review.approved) return { scenarioCount: written.scenarioCount }
     written =
       (await agent(
-        `${CONTEXT}\n\nThe review of ${SCENARIOS} against the spec found these problems. Fix each one, and only these, keeping the numbering continuous:\n${JSON.stringify(review.issues, null, 2)}\nThe spec decides. Return the number of scenarios as scenarioCount.`,
+        `${CONTEXT}\n\nThe review of ${SCENARIOS} against the spec found these problems. Fix each one, and only these, as your test case guide (${TEST_GUIDE}, "Changing test cases") says, with the cases file ${CASES} and the output base ${TEST_BASE}:\n${JSON.stringify(review.issues, null, 2)}\nThe spec decides. Return the number of cases as scenarioCount.`,
         { label: `qa:fix-scenarios-${i}`, phase: 'Tests', agentType: 'levi-qa', schema: WRITTEN },
       )) || written
   }
@@ -310,9 +307,13 @@ for (const [stage, r] of [['tests', tests], ['scenarios', scenarios]]) {
 // ---- 3. Lock ----
 
 phase('Lock')
-const locked = await guard('lock', `Run \`${LOCK} lock ${LOCK_DIR} ${[...tests.files, SCENARIOS].join(' ')}\` and return its exit code, and its output as summary.`, RUN)
+const snapshotScenarios = () => guard('qa-snapshot', `Run \`${LOCK} lock ${QA_SNAPSHOT} ${SCENARIO_FILES.join(' ')}\` and return its exit code, and its output as summary.`, RUN)
+const restoreScenarios = () => guard('qa-restore', `Run \`${LOCK} verify ${QA_SNAPSHOT}\` and return its exit code, and its output as summary.`, RUN)
+const locked = await guard('lock', `Run \`${LOCK} lock ${LOCK_DIR} ${tests.files.join(' ')}\` and return its exit code, and its output as summary.`, RUN)
 if (!locked || locked.exitCode !== 0) return { status: 'blocked', stage: 'lock', detail: locked ? locked.summary : 'the lock step did not complete' }
-log(`locked ${tests.files.length} test file(s) and ${scenarios.scenarioCount} scenario(s)`)
+const snapped = await snapshotScenarios()
+if (!snapped || snapped.exitCode !== 0) return { status: 'blocked', stage: 'lock', detail: snapped ? snapped.summary : 'the test cases could not be snapshotted' }
+log(`locked ${tests.files.length} test file(s); ${scenarios.scenarioCount} test case(s) kept as QA wrote them`)
 
 // ---- 4. Build: implement, tests, review, then E2E, until the review approves and every scenario passes ----
 
@@ -362,13 +363,12 @@ async function e2e(note) {
   return agent(
     `${CONTEXT}
 
-The code was approved in review. Run every scenario in ${SCENARIOS} (there are ${scenarios.scenarioCount}) against the running app, end to end, ${
+The code was approved in review. Run every test case in ${SCENARIOS} (there are ${scenarios.scenarioCount}) against the running app and record the results, following your test case guide, ${TEST_GUIDE} ("Recording results"), with the cases file ${CASES} and the output base ${TEST_BASE}. Run them ${
       plan.hasUi
         ? "in a headless browser: the project's E2E runner (such as Playwright) or a browser tool you have"
         : 'through its API or CLI'
     }. Start the app with \`${plan.app.start}\` (${plan.app.url}; ${plan.app.notes}) and stop it when you are done.
-Follow each scenario's steps as written and compare with its Expected. Set its Status to PASS or FAIL and its Evidence to what you observed (for FAIL: actual against expected, the error). Set the Status at the top of the file to "<passed>/${scenarios.scenarioCount} PASS".
-Change nothing else in the file and no application code. A scenario you could not run is FAIL, with the reason: untested is not passed.${note ? `\n\n${note}` : ''}`,
+Change no application code. Return the result of every case, by its ID.${note ? `\n\n${note}` : ''}`,
     { label: 'qa:e2e', phase: 'Build', agentType: 'levi-qa', schema: E2E },
   )
 }
@@ -394,7 +394,7 @@ for (let round = 1; round <= MAX_BUILD_ROUNDS; round++) {
     `${CONTEXT}
 
 Review the code change of this feature as the gate before merge. The change is everything that differs from commit ${base.head} (git diff and untracked files), leaving out files that were already modified before the run: ${base.dirty.join(', ') || 'none'}.
-All unit and feature tests pass. The tests and scenarios are locked and correct by definition: do not propose changing them.
+All unit and feature tests pass. The tests are locked and the test cases are QA's; both are correct by definition: do not propose changing them.
 Check the change against the spec, ${TASKS} and the designs: correctness, security (input validation, authorization, secrets), performance, fit with the architecture and conventions, missing pieces.
 Follow ${REVIEW_GUIDE} and the two checklists next to it (security by OWASP Top 10, performance and correctness), but write the findings where and how this prompt says.
 Write ${REVIEW}: findings graded critical / warning / suggestion, each with the file, the problem, a concrete fix and its owner (levi-teamlead for schema, migrations and CI/CD, levi-developer for the rest). Approve only when no critical or warning finding remains; suggestions alone do not block.`,
@@ -409,34 +409,32 @@ Write ${REVIEW}: findings graded critical / warning / suggestion, each with the 
   }
 
   // The review approved: QA runs the scenarios end to end.
-  let run = await e2e()
-  let check = await guard('lock-check', `Run \`${LOCK} verify ${LOCK_DIR}\` and return its exit code, and its output as summary.`, RUN)
-  if (check && check.exitCode !== 0) {
-    log('the scenarios were changed during E2E and were restored; running E2E again')
-    run = await e2e('The scenario file had been changed during the last run and was restored. Only the Status and Evidence lines may change.')
-    check = await guard('lock-check', `Run \`${LOCK} verify ${LOCK_DIR}\` and return its exit code, and its output as summary.`, RUN)
-    if (check && check.exitCode !== 0) return { status: 'blocked', stage: 'e2e', detail: 'QA changed the locked scenarios twice' }
-  }
+  // Changes to the test cases by anyone but QA are undone before QA runs them; QA's own results are kept after.
+  const restored = await restoreScenarios()
+  if (restored && restored.exitCode !== 0) log('the test cases had been changed outside QA and were restored')
+  const run = await e2e()
   if (!run) return { status: 'blocked', stage: 'e2e', detail: 'the E2E run did not complete' }
-  const passed = new Set(run.results.filter((r) => r.result === 'PASS').map((r) => r.n))
-  const failing = Array.from({ length: scenarios.scenarioCount }, (_, i) => i + 1).filter((n) => !passed.has(n))
+  await snapshotScenarios()
+  const caseIds = Array.from({ length: scenarios.scenarioCount }, (_, i) => `TC-${FEATURE_ID}-${String(i + 1).padStart(3, '0')}`)
+  const passed = new Set(run.results.filter((r) => r.result === 'PASS').map((r) => r.id))
+  const failing = caseIds.filter((id) => !passed.has(id))
   if (!failing.length) {
     return {
       status: 'done',
       rounds: round,
       tests: tests.files,
       testCommand: tests.testCommand,
-      scenarios: { file: SCENARIOS, count: scenarios.scenarioCount },
+      scenarios: { files: SCENARIO_FILES, count: scenarios.scenarioCount },
       review: review.summary,
       suggestions: review.findings.filter((f) => f.severity === 'suggestion'),
     }
   }
-  const evidence = failing.map((n) => {
-    const r = run.results.find((x) => x.n === n)
-    return `scenario ${n}: ${r ? r.evidence : 'not run'}`
+  const evidence = failing.map((id) => {
+    const r = run.results.find((x) => x.id === id)
+    return `${id}: ${r ? r.evidence : 'not run'}`
   })
   last = { stage: 'e2e', failing, evidence }
-  pending = [{ owner: 'levi-developer', source: 'E2E', detail: `failing scenarios in ${SCENARIOS}:\n${evidence.join('\n')}` }]
+  pending = [{ owner: 'levi-developer', source: 'E2E', detail: `failing test cases in ${SCENARIOS}:\n${evidence.join('\n')}` }]
 }
 
 return { status: 'stalled', rounds: MAX_BUILD_ROUNDS, last }

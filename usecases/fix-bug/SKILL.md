@@ -1,8 +1,8 @@
 ---
 name: levi-fix-bug
-description: Fix a bug in code that is already merged into the base branch. The developer lists what is unclear in the report and the user confirms it; then, as a Workflow of independent subagents, the developer investigates and fixes it test first (writing unit and feature tests only when the existing ones do not cover the bug) while QA writes the bug's test scenarios; the teamlead reviews every fix once the tests pass, and after its approval QA runs the scenarios end to end in a headless browser and sends the failing ones back to the developer. Tests and scenarios are never changed to make them pass. A problem in work that is not merged yet is a revision of that work, not a bug. Fits requests such as "fix this bug", "X is broken", "X shows the wrong value", "sửa bug X", "lỗi X".
+description: Fix a bug in code that is already merged into the base branch. The developer lists what is unclear in the report and the user confirms it; then, as a Workflow of independent subagents, the developer investigates and fixes it test first (writing unit and feature tests only when the existing ones do not cover the bug) while QA writes the bug's test cases; the teamlead reviews every fix once the tests pass, and after its approval QA runs the test cases end to end in a headless browser and sends the failing ones back to the developer. Tests and test cases are never changed to make them pass. A problem in work that is not merged yet is a revision of that work, not a bug. Fits requests such as "fix this bug", "X is broken", "X shows the wrong value", "sửa bug X", "lỗi X".
 argument-hint: "<what goes wrong, how to reproduce it, and screenshots or logs if you have them>"
-requires: create-feature, code-review
+requires: create-feature, code-review, generate-test-scenarios
 ---
 
 # Fix a bug
@@ -19,7 +19,7 @@ The work has two halves:
 ## The rules that never bend
 
 - **Test first.** Before the fix, there are unit and feature tests that fail because of the bug: existing ones when they already cover it, otherwise new ones the developer writes. The fix is done when they pass, together with the whole suite.
-- **Tests and scenarios are locked.** The tests that cover the bug are locked before the fix, and QA's scenarios as soon as they are written. Nobody may edit, delete, skip or weaken them afterwards: when one fails, the code is fixed. The lock is the `lock-tests.mjs` script of `create-feature`: it hashes the files, checks them after every round and restores any that changed. Only the `Status` and `Evidence` lines of the scenarios change, when QA runs them.
+- **Tests are locked, test cases are QA's.** The tests that cover the bug are locked before the fix: nobody may edit, delete, skip or weaken them afterwards, and when one fails, the code is fixed. The lock is the `lock-tests.mjs` script of `create-feature`: it hashes the files, checks them after every round and restores any that changed. The test cases belong to QA: QA writes, changes and runs them with the test case guide of `generate-test-scenarios`, and a change by anyone else is undone with the same script before QA runs them. QA never changes an expected result to match what the code does.
 - **No guessing.** The expected behavior comes from the spec, the designs and the points the user confirmed. What none of them settles is asked, not assumed.
 - **Nothing is committed.** The changes stay in the working tree for the user to review.
 
@@ -29,15 +29,16 @@ The work has two halves:
 |---|---|---|
 | `docs/specs/<spec>.md`, `docs/designs/<design>/` | PM, Designer | The spec and designs of the feature, when there are. Read-only |
 | Unit and feature tests, in the framework's folders | Developer | **Deliverable.** The tests that cover the bug. Locked before the fix |
-| `docs/tests/bugs/<slug>.md` | QA | **Deliverable.** Numbered test scenarios of the bug with their PASS or FAIL result. Locked once written, except the results |
+| `docs/tests/bugs/<slug>.md`, `docs/tests/bugs/<slug>.xlsx` | QA | **Deliverable.** The test cases of the bug with their PASS or FAIL result, in the format of `generate-test-scenarios`. Only QA changes them |
 | Application code | Developer | **Deliverable.** The fix |
 | `docs/levi/<slug>/report.md` | Workflow | Scratch: the bug report as the user gave it. Deleted at the end |
 | `docs/levi/<slug>/confirmed.md` | Workflow | Scratch: the developer's questions and the user's answers, word for word. Deleted at the end |
 | `docs/levi/<slug>/investigation.md` | Developer | Scratch: root cause, tests that cover the bug, fix plan. Deleted at the end |
 | `docs/levi/<slug>/review.md` | Teamlead | Scratch: review findings. Deleted at the end |
-| `docs/levi/<slug>/locked/` | Workflow | Scratch: copies and hashes of the locked files. Deleted at the end |
+| `docs/levi/<slug>/locked/` | Workflow | Scratch: copies and hashes of the locked tests, and of the test cases as QA last wrote them. Deleted at the end |
+| `docs/levi/<slug>/test-cases.json` | QA | Scratch: the data the test cases are rendered from. Deleted at the end |
 
-`<slug>` is a short kebab-case name for the bug, in English (for example `cart-total-rounding`). `levi-create-feature/`, `levi-design/` and `levi-code-review/` are installed next to this skill's folder.
+`<slug>` is a short kebab-case name for the bug, in English (for example `cart-total-rounding`). `levi-create-feature/`, `levi-design/`, `levi-code-review/` and `levi-generate-test-scenarios/` are installed next to this skill's folder. The test cases use the feature ID `BUG-<SLUG>` (the slug in uppercase), so their IDs are `TC-BUG-<SLUG>-001` and up.
 
 ## Steps
 
@@ -73,9 +74,9 @@ The work has two halves:
    - `not_a_bug`: the developer found that the code does what the spec and the confirmed points expect. Tell the user why, clean up (step 8) and stop.
    - `unmerged`: the root cause is in code that is not merged into the base branch. Tell the user it is a revision of unmerged work, not a bug, with the root cause and its locations. Clean up and stop. The code was not changed.
    - `blocked`: something outside the code stops the work (the app cannot start, a service or credential is missing, no test could be made to fail on the bug). Tell the user the stage, the detail and what they need to provide. Keep `docs/levi/<slug>/` and run step 6 again when they say to.
-   - `stalled`: the rounds ran out (10 by default) and something still fails. Tell the user what failed last. If they want to go on, in the same session call the Workflow tool again with `resumeFromRunId` and a higher `maxRounds`. Tests and scenarios still do not change.
+   - `stalled`: the rounds ran out (10 by default) and something still fails. Tell the user what failed last. If they want to go on, in the same session call the Workflow tool again with `resumeFromRunId` and a higher `maxRounds`. Tests and test cases still do not change.
 8. **Clean up.** Delete `docs/levi/<slug>/`, then `docs/levi` if it is empty. Keep everything else.
-9. **Report.** Tell the user: the root cause and where it was; the tests that cover the bug (written now, or existing ones) and the command that runs them; the scenario file with its result (for example `4/4 PASS`); how many rounds it took; the review outcome and the suggestions left open; the files changed (from `git status`); and that nothing was committed.
+9. **Report.** Tell the user: the root cause and where it was; the tests that cover the bug (written now, or existing ones) and the command that runs them; the test case files with their result (for example `4/4 PASS`); how many rounds it took; the review outcome and the suggestions left open; the files changed (from `git status`); and that nothing was committed.
 
 ## Workflow
 
@@ -83,7 +84,7 @@ The steps `workflow.js` runs, and the ones you run when there is no Workflow too
 
 1. **Baseline.** Record `git rev-parse HEAD` and the files `git status --porcelain` lists, so the review sees only this run's changes.
 2. **Two tracks at the same time**, neither reading the other's work:
-   - *QA.* `levi-qa` writes `docs/tests/bugs/<slug>.md` in the format below, from the report, the confirmed points, the spec and the designs, without reading code: scenario 1 follows the steps of the report, the next ones cover nearby cases the same bug could break. The file is locked at once (`lock-tests.mjs lock docs/levi/<slug>/locked/scenarios ...`). QA then waits for the review to approve.
+   - *QA.* `levi-qa` writes the test cases from the report, the confirmed points, the spec and the designs, without reading code, following `levi-generate-test-scenarios/references/test-case-guide.md`, with the cases file `docs/levi/<slug>/test-cases.json` and the output base `docs/tests/bugs/<slug>`: case 1 follows the steps of the report, the next ones cover nearby cases the same bug could break. The files are snapshotted at once (`lock-tests.mjs lock docs/levi/<slug>/locked/scenarios ...`). QA then waits for the review to approve.
    - *Developer, test first.* `levi-developer` finds the root cause (file, line range, other places with the same cause) and writes `investigation.md`. If existing unit and feature tests already cover the bug and fail because of it, it uses them; otherwise it writes the missing ones, from the spec and the confirmed points. The tests are run: some must fail on the current code. If none fails, the developer tries again (at most 3 times). If the code turns out to do what is expected, stop with `not_a_bug`.
 3. **Merge check**, unless all code is merged: for each root-cause location, `git blame --porcelain -L <from>,<to> -- <file>`, then `git merge-base --is-ancestor <commit> <base>` for each commit. An uncommitted line (all-zero commit), an untracked file or a commit that is not an ancestor of the base means the code is not merged: stop with `unmerged`.
 4. **Lock** the tests that cover the bug (`lock-tests.mjs lock docs/levi/<slug>/locked/tests ...`).
@@ -91,26 +92,5 @@ The steps `workflow.js` runs, and the ones you run when there is no Workflow too
    1. *Fix.* The developer fixes the code: first as planned in `investigation.md`, later what the last round sent back. It fixes the cause, not the symptom.
    2. *Tests.* `lock-tests.mjs verify` on the tests (any changed test is restored and the developer is told), then the bug's tests, then the whole suite. A failure goes back to the developer.
    3. *Review.* Once the tests pass, a fresh `levi-teamlead` call reviews the change since the baseline: the root cause fixed everywhere, what the spec, designs and confirmed points expect, nothing else broken, security, performance, fit, following `levi-code-review/references/review-guide.md` and its checklists. It writes `review.md`. Critical or warning findings go back to the developer.
-   4. *E2E.* Once the review approves, `levi-qa` runs every scenario in a headless browser (the project's E2E runner such as Playwright, or a browser tool; through the API or CLI when there is no UI) and writes PASS or FAIL for each; then `lock-tests.mjs verify` on the scenarios. Failing scenarios go back to the developer, and the next round runs tests, review and E2E again.
-   5. The run is done when the review approves and every scenario passes.
-
-### Scenario format
-
-`docs/tests/bugs/<slug>.md`, in the language of the request:
-
-```markdown
-# Bug scenarios: <bug in a few words>
-
-- **Report:** <one line: what went wrong>
-- **Status:** 4/4 PASS
-
-## 1. <short title>
-- **Preconditions:** <state, data, user role>
-- **Steps:**
-  1. <one action>
-- **Expected:** <observable result, from the spec or the confirmed points>
-- **Status:** PASS | FAIL
-- **Evidence:** <what was observed; for FAIL, actual against expected, and the error>
-```
-
-Scenarios are numbered from 1 with no gaps. Before the first run every `Status` and `Evidence` is `-`. A scenario that could not be run is FAIL, never PASS.
+   4. *E2E.* Once the review approves, `lock-tests.mjs verify` on the test cases undoes any change made outside QA. Then `levi-qa` runs every case in a headless browser (the project's E2E runner such as Playwright, or a browser tool; through the API or CLI when there is no UI) and records PASS or FAIL as its test case guide says; the snapshot is then taken again. Failing cases go back to the developer, and the next round runs tests, review and E2E again.
+   5. The run is done when the review approves and every case passes.

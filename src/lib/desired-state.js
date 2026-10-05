@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const { ROUTER_NAME, skillName } = require('./usecases');
-const { CODEX_SKILL_DIR, CODEX_POLICY, skillDirs, AGENT_TARGETS } = require('./tools');
+const { CODEX_SKILL_DIR, CODEX_POLICY, skillDirs, skillDirFor, AGENT_TARGETS } = require('./tools');
+const { withRoleSkills } = require('./role-skills');
 const { setField } = require('./frontmatter');
 const { renderRouter } = require('./router');
 
@@ -35,10 +36,11 @@ function addSkill(out, usecase, dir) {
   if (dir === CODEX_SKILL_DIR) put(out, path.posix.join(root, 'agents/openai.yaml'), CODEX_POLICY, usecaseGroup(usecase.id));
 }
 
-function addAgents(out, agents, tools, group) {
+// `prepare` adapts an agent to one tool before it is rendered (team agents get their role skills).
+function addAgents(out, agents, tools, group, prepare = (agent) => agent) {
   for (const tool of tools) {
     const target = AGENT_TARGETS[tool];
-    for (const agent of agents) put(out, path.posix.join(target.dir, agent.name + target.ext), target.render(agent), group);
+    for (const agent of agents) put(out, path.posix.join(target.dir, agent.name + target.ext), target.render(prepare(agent, tool)), group);
   }
 }
 
@@ -65,13 +67,15 @@ function withRequired(byId, ids) {
 }
 
 // The files a clean install of `ids` (and what they require) for `tools` would contain: Map of
-// project-relative path to { content, group }. Nothing is written here.
+// project-relative path to { content, group }. Nothing is written here. Usecases that are a team
+// role's skill are always installed, since the team always is and its agents rely on them.
 function build(kit, ids, tools) {
   const byId = new Map(kit.usecases.map((u) => [u.id, u]));
   const out = new Map();
   const missing = [];
   const present = [];
-  for (const id of withRequired(byId, ids)) {
+  const roleSkills = kit.usecases.filter((u) => u.skill).map((u) => u.id);
+  for (const id of withRequired(byId, [...ids, ...roleSkills])) {
     if (!byId.has(id)) {
       missing.push(id);
       continue;
@@ -82,7 +86,7 @@ function build(kit, ids, tools) {
     addAgents(out, usecase.agents, tools, usecaseGroup(id));
   }
   addRouter(out, present, kit.team, tools);
-  addAgents(out, kit.team, tools, 'team');
+  addAgents(out, kit.team, tools, 'team', (agent, tool) => withRoleSkills(agent, present, skillDirFor(tool, tools)));
   return { files: out, missing, ids: present.map((u) => u.id) };
 }
 

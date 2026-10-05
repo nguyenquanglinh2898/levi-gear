@@ -2,6 +2,9 @@
 name: levi-code-review
 description: Have the teamlead review code and suggest a fix for every problem it finds, without changing anything. It checks security against the OWASP Top 10 (injection, broken authentication, sensitive data exposure, XXE, broken access control, security misconfiguration, XSS, insecure deserialization, SSRF and more) and performance and correctness (N+1 queries, race conditions, memory leaks, inefficient algorithms, missing indexes, wrong error handling, breaking API changes). The target is a pull request link, a branch, a commit range, files or folders, or the uncommitted changes. The findings are given in the conversation, graded critical / warning / suggestion. Other usecases (create-feature, fix-bug) use the same review criteria for their teamlead review. Fits requests such as "review this PR", "review my changes", "check this code for security issues", "review PR này", "review code giúp tôi", "kiểm tra bảo mật đoạn code này".
 argument-hint: "<pull request link, branch, commit range or path; empty for the uncommitted changes>"
+skill-for: teamlead
+skill-when: you review code
+skill-guide: references/review-guide.md
 ---
 
 # Code review

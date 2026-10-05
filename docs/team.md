@@ -12,6 +12,21 @@ Every install includes five team agents. Usecases delegate work to them. They ne
 
 Installed agent files are named `levi-<role>` (for example `.claude/agents/levi-qa.md`). Each agent file also gets a note appended to its description: the tool should pick it only when a levi workflow delegates to it, never for other requests.
 
+## Role skills
+
+Some usecases are also the skill of a team role for one kind of task:
+
+| Role | Task | Skill |
+|---|---|---|
+| `levi-pm` | Writing or updating a spec | [`spec-writing`](usecases.md#spec-writing) |
+| `levi-designer` | Drawing or changing designs as SVG | [`design`](usecases.md#design) |
+| `levi-teamlead` | Reviewing code | [`code-review`](usecases.md#code-review) |
+| `levi-qa` | Writing, changing or running test cases | [`generate-test-scenarios`](usecases.md#generate-test-scenarios) |
+
+These usecases are installed with every install, whatever you name in `levi init`, and each agent file gets a "Your skills" section that points to the skill's guide. The agent reads that guide and follows it whenever it gets that kind of task, from any usecase, even when the prompt does not mention it. The prompt still decides what to work on, the sources and where to write.
+
+A usecase becomes a role skill by declaring it in its `SKILL.md`; see [Authoring usecases](authoring-usecases.md#role-skills).
+
 ## Roles in detail
 
 ### levi-pm
@@ -67,6 +82,7 @@ Tools: read, edit, web. Model tier: standard.
 Checks that the product does what the spec says, independently of how it was built.
 
 - Writes `test-plan.md` from the spec and design, with test cases that each cover an acceptance criterion.
+- Writes, changes and runs test cases with its role skill, [`generate-test-scenarios`](usecases.md#generate-test-scenarios): Markdown and Excel in `docs/tests/`, in every usecase. Only QA changes them.
 - Runs E2E tests against the real UI and writes automated E2E and acceptance tests. Developers own unit tests.
 - Compares the UI with `docs/designs/` and reports bugs with reproduction steps, severity and evidence in `test-report.md`.
 - Gives the PM a clear go or no-go.
@@ -103,7 +119,7 @@ Agents use the folder the workflow gives them. If it gives none, they use `docs/
 | Database schema, migrations, CI/CD and deployment config | Teamlead |
 | Application code, unit and integration tests, technical docs of the code | Developer |
 | `test-plan.md` | QA: test plan and test cases |
-| `docs/tests/` | QA: numbered test scenarios with their PASS or FAIL results |
+| `docs/tests/` | QA: numbered test scenarios and test cases, with their PASS or FAIL results once run |
 | `test-report.md` | QA: results, bugs, sign-off |
 | E2E and acceptance tests | QA |
 

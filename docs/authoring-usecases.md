@@ -26,6 +26,9 @@ Frontmatter fields:
 | `description` | yes | What the usecase does and which requests fit it |
 | `argument-hint` | no | Shown by tools that support it, for example `"<problem or idea>"` |
 | `requires` | no | Comma list of usecase ids this one builds on, for example `spec-writing, brainstorming`. Installing this usecase installs them too |
+| `skill-for` | no | Comma list of team roles (`qa`, `pm`, ...) this usecase is the skill of. See [Role skills](#role-skills) |
+| `skill-when` | with `skill-for` | The kind of task, completing "When ...", for example `you write or change test cases or test scenarios` |
+| `skill-guide` | with `skill-for` | Path of the guide the role follows, relative to the usecase folder, for example `references/test-case-guide.md` |
 
 The installer adds `disable-model-invocation: true` to the installed copy.
 
@@ -36,6 +39,23 @@ The body is the workflow. Keep the workflow in this file: the entry point reads 
 To reuse another usecase, list it in `requires` and tell the workflow to read its `SKILL.md` in the sibling folder (`levi-<id>/SKILL.md`) and follow it. Installed skills sit side by side in each tool's skill folder.
 
 A usecase may ship a Claude Code Workflow script (for example `workflow.js`) to run independent subagents from code. The tool calls it by its path in the skill folder. Other tools have no Workflow tool, so `SKILL.md` must also describe the same steps for them to run one by one. See `usecases/create-feature/`.
+
+## Role skills
+
+A usecase can be the skill a team role uses for one kind of task, in every usecase and not only its own: `generate-test-scenarios` is how `levi-qa` writes test cases, wherever it is asked to. Declare it in the frontmatter:
+
+```yaml
+skill-for: qa
+skill-when: you write or change test cases or test scenarios, or record their results
+skill-guide: references/test-case-guide.md
+```
+
+The installer then:
+
+- installs the usecase with every install, since the team always is;
+- adds a "Your skills" section to each named role's agent file, with the task and the guide's path in that tool's skill folder.
+
+Write the guide so that it works on its own, whichever usecase calls the agent: what the prompt provides, the rules, the format of what the agent writes, and paths relative to the skill folder. Leave the workflow steps (asking the user, choosing files) in `SKILL.md`. Usecases that hand the role this task should point to the guide as well, and say only what is specific to them: the sources, the paths, what must be covered.
 
 ## Agents
 
@@ -71,7 +91,8 @@ The kit is loaded and validated before every command writes anything. These fail
 - `SKILL.md` missing, or `name` not equal to `levi-<id>`, or `description` missing;
 - an agent whose `name` does not match its file, with no `description`, with an unknown `tools` value or with an unknown `model` tier;
 - the same agent name defined twice, or a usecase id equal to a team role;
-- a `requires` entry that names itself or a usecase missing from the kit.
+- a `requires` entry that names itself or a usecase missing from the kit;
+- `skill-for` naming a role the team does not have, or without `skill-when` and `skill-guide`, or a `skill-guide` file that does not exist.
 
 ## Conventions
 
