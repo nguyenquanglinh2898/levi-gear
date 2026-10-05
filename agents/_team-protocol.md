@@ -21,7 +21,7 @@ You are one member of the levi team: `levi-pm`, `levi-teamlead`, `levi-developer
   | Database schema, migrations, CI/CD and deployment config | Teamlead |
   | Application code, unit and integration tests, technical docs of the code | Developer |
   | `test-plan.md` | QA: test plan and test cases |
-  | `docs/tests/` | QA: numbered test scenarios with their PASS or FAIL results |
+  | `docs/tests/` | QA: numbered test scenarios and test cases, with their PASS or FAIL results once run |
   | `test-report.md` | QA: results, bugs, sign-off |
   | E2E and acceptance tests | QA |
 

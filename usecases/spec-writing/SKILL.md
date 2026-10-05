@@ -2,19 +2,16 @@
 name: levi-spec-writing
 description: Write or update a project spec with the PM, without inventing anything. The PM lists every open question and doubt, the user confirms them, and the spec is written only once the facts are sufficient and confirmed; whatever is still unconfirmed is left as an open question, never filled in. The spec goes to docs/specs/<slug>.md. Fits requests such as "write a spec for X", "update the spec of X", "turn this idea into a spec", "viết spec cho X".
 argument-hint: "<what the spec is about>"
+skill-for: pm
+skill-when: you write or update a spec
+skill-guide: references/spec-guide.md
 ---
 
 # Spec writing
 
 Turn a request into a spec that contains only what is certain. `levi-pm` is the only agent that writes the spec; you run it in turn, relay its questions to the user, and never write, edit or answer any part of the spec yourself.
 
-A spec is a promise to the rest of the team, so the rule is simple: **a line goes into the spec only when it is confirmed.** Confirmed means one of:
-
-- the user stated it, in the request or in an answer to a question;
-- it is written in a document the user pointed to, or in a project file the PM read (the path is the proof);
-- for an update, it is already in the existing spec and the user did not change it.
-
-These are not confirmed, and never go into the spec as fact: a guess, a plausible default, "what products like this usually do", a recommended option the user did not accept, an unanswered question. They stay open questions.
+A spec is a promise to the rest of the team: **a line goes into the spec only when it is confirmed.** What counts as confirmed, and the format of the spec, are in `references/spec-guide.md`; the PM follows that guide.
 
 ## Files
 
@@ -57,53 +54,6 @@ These are not confirmed, and never go into the spec as fact: a guess, a plausibl
    - Not ready, and there are open questions the user can still answer: go back to step 4. Ask only the new and the still-open ones. At most three rounds in total.
    - The user says to write now, or the three rounds are used up: go to step 6 with what is confirmed. Say what is still open.
    - The goal, the users or the core scope are still unconfirmed: do not write a spec. Tell the user exactly what is missing and stop. Keep `ledger.md` so a later run can continue; do not delete it.
-6. **PM writes the spec.** Call `levi-pm` with the ledger path and the spec path. It writes `docs/specs/<slug>.md` in the format below, using only Confirmed facts, in the language of the request. In update mode it changes only what a confirmed fact touches and leaves the rest as it was. Every unresolved question goes into the spec's Open questions; a section that depends on one says so instead of being filled in.
+6. **PM writes the spec.** Call `levi-pm` with the ledger path and the spec path. It writes `docs/specs/<slug>.md` following `references/spec-guide.md`, using only Confirmed facts, in the language of the request. In update mode it changes only what a confirmed fact touches and leaves the rest as it was. Every unresolved question goes into the spec's Open questions; a section that depends on one says so instead of being filled in.
 7. **Clean up.** Delete `ledger.md`, then remove `docs/levi/<slug>/` if empty, and `docs/levi` if that is empty. Delete only after the spec is written. The spec's Source column keeps the traceability.
 8. **Report.** Tell the user the spec path, whether it is new or updated, its Status, how many stories and acceptance criteria it holds, the open questions still in it (one line each).
-
-## Spec format
-
-`docs/specs/<slug>.md`, in the language of the request:
-
-```markdown
-# <Title>
-
-- **Status:** Ready | Draft (open questions remain)
-- **Sources:** <documents and people the facts come from>
-
-## Goal
-<What the product or change must achieve, and for whom.>
-
-## Users
-<Who uses it and what each kind of user may do.>
-
-## Scope
-<What is included.>
-
-## Out of scope
-<What is explicitly excluded.>
-
-## User stories
-| ID | Story | Source |
-|---|---|---|
-| US-1 | As a <user>, I want <goal>, so that <reason> | user / <file path> |
-
-## Acceptance criteria
-| ID | Story | Criterion | Source |
-|---|---|---|---|
-| AC-1 | US-1 | <observable behavior that can be checked yes or no> | user / <file path> |
-
-## Rules and constraints
-<Business rules, limits, states and error cases. Omit this section when none is confirmed.>
-
-## Open questions
-| # | Question | Blocks |
-|---|---|---|
-| 1 | <unanswered question> | <the section it blocks> |
-```
-
-- **Status** is Ready only when Open questions is empty; otherwise Draft.
-- Every story and criterion has a **Source**. A row with no source does not belong in the spec.
-- Criteria describe behavior the user or a tester can observe, never how it is built. Do not name technologies, tables or classes unless the user stated them as a requirement.
-- Goal, Users, Scope, Out of scope, Stories and Criteria are always present. When nothing is confirmed for one, its body is `Not yet defined. See Open questions.`, with the matching question listed.
-- Open questions are written as questions, never as assumptions. The spec has no "Assumptions" section.

@@ -25,6 +25,22 @@ function loadAgents(id, dir) {
     );
 }
 
+function parseList(value) {
+  return (value || '').split(',').map((s) => s.trim()).filter(Boolean);
+}
+
+// A usecase can be the skill of team roles for one kind of task: `skill-for` (the roles),
+// `skill-when` (the task, completing "When ...") and `skill-guide` (the file the role follows).
+function loadRoleSkill(id, dir, data) {
+  const roles = parseList(data['skill-for']);
+  if (!roles.length) return null;
+  const label = `usecases/${id}/SKILL.md`;
+  if (!data['skill-when']) throw new Error(`${label}: skill-for needs skill-when`);
+  if (!data['skill-guide']) throw new Error(`${label}: skill-for needs skill-guide`);
+  if (!fs.existsSync(path.join(dir, data['skill-guide']))) throw new Error(`${label}: skill-guide "${data['skill-guide']}" not found`);
+  return { roles, when: data['skill-when'], guide: data['skill-guide'] };
+}
+
 function load(id) {
   const dir = path.join(KIT_DIR, id);
   const skillFile = path.join(dir, 'SKILL.md');
@@ -34,11 +50,21 @@ function load(id) {
     throw new Error(`usecases/${id}/SKILL.md: name must be "${skillName(id)}", got "${data.name}"`);
   }
   if (!data.description) throw new Error(`usecases/${id}/SKILL.md: missing description`);
-  const requires = (data.requires || '').split(',').map((r) => r.trim()).filter(Boolean);
-  return { id, dir, description: data.description, requires, agents: loadAgents(id, dir) };
+  const requires = parseList(data.requires);
+  return { id, dir, description: data.description, requires, skill: loadRoleSkill(id, dir, data), agents: loadAgents(id, dir) };
 }
 
 // A usecase may build on others (`requires:` in its SKILL.md); they must exist in the kit.
+// Role skills must name roles the team has.
+function checkSkillRoles(usecases, team) {
+  const roles = new Set(team.map((a) => a.name.slice(PREFIX.length)));
+  for (const u of usecases) {
+    for (const role of (u.skill && u.skill.roles) || []) {
+      if (!roles.has(role)) throw new Error(`usecases/${u.id}/SKILL.md: skill-for names unknown team role "${role}"`);
+    }
+  }
+}
+
 function checkRequires(usecases) {
   const ids = new Set(usecases.map((u) => u.id));
   for (const u of usecases) {
@@ -72,6 +98,7 @@ function loadKit() {
   const team = loadTeam();
   checkNames(usecases, team);
   checkRequires(usecases);
+  checkSkillRoles(usecases, team);
   return { usecases, team };
 }
 

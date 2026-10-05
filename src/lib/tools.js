@@ -17,6 +17,11 @@ function skillDirs(tools) {
   return [...dirs];
 }
 
+// The skill folder an agent of `tool` reads: Copilot uses .claude/skills when Claude is installed.
+function skillDirFor(tool, tools) {
+  return tool === 'claude' || (tool === 'copilot' && tools.includes('claude')) ? '.claude/skills' : '.agents/skills';
+}
+
 // Codex ignores SKILL.md frontmatter flags and reads its invocation policy from this file.
 const CODEX_SKILL_DIR = '.agents/skills';
 const CODEX_POLICY = 'policy:\n  allow_implicit_invocation: false\n';
@@ -90,4 +95,4 @@ function invocationHelp(tools) {
     .join('\n');
 }
 
-module.exports = { TOOLS, CODEX_SKILL_DIR, CODEX_POLICY, skillDirs, AGENT_TARGETS, invocationHelp };
+module.exports = { TOOLS, CODEX_SKILL_DIR, CODEX_POLICY, skillDirs, skillDirFor, AGENT_TARGETS, invocationHelp };

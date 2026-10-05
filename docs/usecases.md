@@ -7,9 +7,12 @@ A usecase is a self-contained workflow, installed as a skill named `levi-<id>`. 
 | [`brainstorming`](#brainstorming) | Turns a problem or idea into an execution plan: small tasks, an owning agent and an hour estimate for each |
 | [`spec-writing`](#spec-writing) | Writes or updates a spec with the PM: it asks about everything unclear first and writes only what you confirmed |
 | [`design`](#design) | Draws SVG designs with the Designer from a text description, images or videos you upload, or both |
-| [`create-feature`](#create-feature) | Builds a feature spec first and test first: tests and scenarios from the spec are locked, and the code is fixed until the tests pass, the teamlead approves, and every scenario passes end to end |
+| [`create-feature`](#create-feature) | Builds a feature spec first and test first: the tests from the spec are locked, QA's test cases are QA's alone, and the code is fixed until the tests pass, the teamlead approves, and every test case passes end to end |
 | [`fix-bug`](#fix-bug) | Fixes a bug in merged code: the developer clarifies it with you, then fixes it test first while QA writes scenarios; the teamlead reviews and QA tests end to end until everything passes |
 | [`code-review`](#code-review) | The teamlead reviews a pull request, a branch, commits, files or your uncommitted changes for security (OWASP Top 10), performance and correctness, and suggests a fix for every finding. Nothing is changed |
+| [`generate-test-scenarios`](#generate-test-scenarios) | QA writes screen-level test cases from the feature specs alone, as Markdown and an Excel sheet in `docs/tests/`, and lists where the spec is unclear. Specs are never changed |
+
+Four of them are also the skills of team roles, and are installed with every install: `spec-writing` (PM), `design` (designer), `code-review` (teamlead) and `generate-test-scenarios` (QA). See [Role skills](team.md#role-skills).
 
 To write your own, see [Authoring usecases](authoring-usecases.md).
 
@@ -224,13 +227,13 @@ Build a feature end to end, the spec-driven way: the spec decides, the tests and
 
 Fits requests such as "build feature X", "implement X" and "add X to the app".
 
-Installing it also installs `spec-writing`, `brainstorming`, `design` and `code-review`, which it reuses.
+Installing it also installs `spec-writing`, `brainstorming`, `design`, `code-review` and `generate-test-scenarios`, which it reuses.
 
 ### What you get
 
 - The feature's code (and migrations, when it needs them), left uncommitted in your working tree.
 - Unit and feature tests in the folders your test framework uses, covering every acceptance criterion of the spec.
-- `docs/tests/<slug>.md`: test scenarios numbered from 1, each with the criteria it covers, steps, the expected result, and its `PASS` or `FAIL` result with evidence from the end-to-end run.
+- `docs/tests/<base>.md` and `.xlsx`: the test cases, in the [`generate-test-scenarios`](#generate-test-scenarios) format (IDs `TC-<FeatureID>-001` and up), each with the criteria it covers and its `PASS` or `FAIL` result with evidence from the end-to-end run.
 - The spec, brainstorming plan and designs, when they had to be created.
 
 ### How it works
@@ -249,16 +252,16 @@ Installing it also installs `spec-writing`, `brainstorming`, `design` and `code-
 |---|---|---|
 | 4. Execution plan | `levi-teamlead` | Fixes the interfaces tests and code share, the test framework and commands, how to start the app, the test groups (covering every criterion) and the implementation batches. |
 | 5. Tests | `levi-developer`, reviewed by `levi-teamlead` | Unit and feature tests, written from the spec in parallel groups. They run once before any code exists (they should fail), then a fresh teamlead reviews them against the spec until it approves. |
-| 5. Scenarios | `levi-qa`, reviewed by `levi-pm` | Written from the spec at the same time, without reading code or tests. A fresh PM reviews them against the spec until it approves. |
-| 6. Lock | workflow | Copies and hashes the tests and scenarios. From here on they are the definition of done. |
+| 5. Test cases | `levi-qa`, reviewed by `levi-pm` | Written from the spec at the same time, without reading code or tests, with QA's test case guide. A fresh PM reviews them against the spec until it approves. |
+| 6. Lock | workflow | Copies and hashes the tests, and snapshots the test cases. From here on they are the definition of done. |
 | 7. Build | `levi-developer`, `levi-teamlead` | Implements the batches, tasks of a batch in parallel. |
 | 8. Gate | workflow | Restores any locked file that was changed, runs the new tests and the whole suite. A failure goes back to the developer. |
 | 9. Review | `levi-teamlead` | Once the tests pass, reviews the change against the spec. Critical and warning findings go back to their owner. |
-| 10. E2E | `levi-qa` | After the review approves, starts the app and runs every scenario in a headless browser (through the API or CLI when there is no UI), writing PASS or FAIL. Failing cases go back to the developer, and steps 7 to 10 repeat until the review approves and every scenario passes. |
+| 10. E2E | `levi-qa` | After the review approves, undoes any change made to the test cases outside QA, starts the app and runs every case in a headless browser (through the API or CLI when there is no UI), recording PASS or FAIL. Failing cases go back to the developer, and steps 7 to 10 repeat until the review approves and every case passes. |
 
-### Tests are locked
+### Tests are locked, test cases are QA's
 
-The developer's tests and QA's scenarios are checked against the spec by a fresh reviewer before anything is built, so a failure later can only mean the code is wrong. After the lock, every round verifies the hashes: a changed or deleted test is restored and the developer is told. Only the `Status` and `Evidence` lines of the scenarios change, when QA runs them.
+The developer's tests and QA's test cases are checked against the spec by a fresh reviewer before anything is built, so a failure later can only mean the code is wrong. After the lock, every round verifies the hashes of the tests: a changed or deleted test is restored and the developer is told. The test cases belong to QA: only QA changes them, through its test case guide, and a change made by anyone else is undone before QA runs them. QA never changes an expected result to match what the code does.
 
 ### When it stops
 
@@ -275,7 +278,7 @@ The developer's tests and QA's scenarios are checked against the spec by a fresh
 
 ### Scratch files
 
-`docs/levi/<slug>/` holds `tasks.md` (the execution plan), `review.md` (the code review) and `locked/` (the snapshot of the locked files). It is deleted when the feature is done, and kept when the run stops.
+`docs/levi/<slug>/` holds `tasks.md` (the execution plan), `review.md` (the code review), `test-cases.json` (the data of the test cases), `locked/` (the snapshot of the locked tests) and `qa-snapshot/` (the test cases as QA last wrote them). It is deleted when the feature is done, and kept when the run stops.
 
 ## fix-bug
 
@@ -283,11 +286,11 @@ The developer's tests and QA's scenarios are checked against the spec by a fresh
 /levi-fix-bug <what goes wrong, how to reproduce it, and screenshots or logs if you have them>
 ```
 
-Fix a bug with the team. The developer first lists what is unclear and you confirm it; then the developer investigates and fixes it test first while QA writes the scenarios, the teamlead reviews every fix, and QA tests it end to end. Tests and scenarios are never changed to make them pass.
+Fix a bug with the team. The developer first lists what is unclear and you confirm it; then the developer investigates and fixes it test first while QA writes the test cases, the teamlead reviews every fix, and QA tests it end to end. Tests and test cases are never changed to make them pass.
 
 Fits requests such as "fix this bug", "X is broken" and "X shows the wrong value".
 
-Installing it also installs `create-feature` (and what that one requires), whose test lock script it uses, and `code-review`, whose criteria the teamlead reviews by.
+Installing it also installs `create-feature` (and what that one requires), whose test lock script it uses, `code-review`, whose criteria the teamlead reviews by, and `generate-test-scenarios`, whose format the test cases use.
 
 ### What counts as a bug
 
@@ -297,7 +300,7 @@ A bug is a defect in feature code that is already **merged into the base branch*
 
 - The fix, left uncommitted in your working tree.
 - Unit and feature tests that failed on the bug and pass now: new ones, or the existing ones when they already covered it.
-- `docs/tests/bugs/<slug>.md`: the bug's test scenarios numbered from 1, the first following the steps of your report, each with its `PASS` or `FAIL` result.
+- `docs/tests/bugs/<slug>.md` and `.xlsx`: the bug's test cases (IDs `TC-BUG-<SLUG>-001` and up), the first following the steps of your report, each with its `PASS` or `FAIL` result.
 
 ### How it works
 
@@ -312,12 +315,12 @@ A bug is a defect in feature code that is already **merged into the base branch*
 
 | Step | Who | What happens |
 |---|---|---|
-| 3. Scenarios | `levi-qa` | At the same time as step 4, without reading code: writes the scenarios, which are locked at once. Then waits for the review to approve. |
+| 3. Test cases | `levi-qa` | At the same time as step 4, without reading code: writes the test cases with its test case guide; they are snapshotted at once. Then waits for the review to approve. |
 | 4. Investigate, test first | `levi-developer` | Finds the root cause and makes sure unit and feature tests fail because of the bug: existing ones if they cover it, otherwise new ones. |
 | 5. Merge check and lock | workflow | `git blame` on the root-cause lines (unmerged code stops the run), then the tests that cover the bug are locked. |
 | 6. Fix | `levi-developer` | Fixes the root cause until the bug's tests and the whole suite pass. |
 | 7. Review | `levi-teamlead` | Reviews the fix. Critical and warning findings go back to the developer. |
-| 8. E2E | `levi-qa` | After the approval, runs every scenario in a headless browser. Failing cases go back to the developer, and steps 6 to 8 repeat until the review approves and every scenario passes. |
+| 8. E2E | `levi-qa` | After the approval, undoes any change made to the test cases outside QA and runs every case in a headless browser. Failing cases go back to the developer, and steps 6 to 8 repeat until the review approves and every case passes. |
 
 ### When it stops
 
@@ -331,7 +334,7 @@ A bug is a defect in feature code that is already **merged into the base branch*
 
 ### Scratch files
 
-`docs/levi/<slug>/` holds `report.md` (your report), `confirmed.md` (the questions and your answers), `investigation.md` (root cause and plan), `review.md` (the review), `locked/` (the snapshot of the locked files) and, for a video, `frames/`. It is deleted when the fix is done, and kept when the run stops.
+`docs/levi/<slug>/` holds `report.md` (your report), `confirmed.md` (the questions and your answers), `investigation.md` (root cause and plan), `review.md` (the review), `test-cases.json` (the data of the test cases), `locked/` (the snapshots of the tests and the test cases) and, for a video, `frames/`. It is deleted when the fix is done, and kept when the run stops.
 
 ## code-review
 
@@ -373,3 +376,64 @@ A verdict (**Approve** or **Request changes**), then the findings from critical 
 | suggestion | Worth doing, not wrong today | No |
 
 It ends with what the teamlead could not check, and any questions.
+
+## generate-test-scenarios
+
+```text
+/levi-generate-test-scenarios <feature IDs (for example F001 F002) or spec files and folders; empty for every feature>
+```
+
+QA writes screen-level test cases from the feature specs already in your repository. The spec is the only source: nothing comes from the code, the UI, the designs or outside knowledge, and no function is invented. Specs are never created or changed.
+
+Fits requests such as "generate test cases for F001", "write test scenarios from the spec" and "sinh test case cho F001, F002".
+
+### What you get
+
+Two files per feature in `docs/tests/`, written in the language of the spec:
+
+| File | Contents |
+|---|---|
+| `<base>.md` | Title and source spec, a coverage summary (cases by category and priority), the test cases, and "spec ambiguities": what QA and BA need to clarify |
+| `<base>.xlsx` | One sheet, one row per case, columns `ID, Title, Category, Priority, Preconditions, Steps, Expected Result, Notes`, ready to import into Jira, TestRail, Notion or a spreadsheet |
+
+`<base>` is `<FeatureID>-<slug>` (for example `F001-login`) when the spec gives the feature a code, in its file or folder name, title or header. A spec without a code uses its slug in uppercase as the feature ID and `<slug>-test-cases` as the base.
+
+Each test case has:
+
+| Field | Rule |
+|---|---|
+| ID | `TC-<FeatureID>-<3 digits>`, for example `TC-F001-001` |
+| Title | Short, says what is checked |
+| Category | Functional, UX, Security, Performance or Accessibility |
+| Priority | P0 (blocks the main flow, or security), P1 (important function), P2 (minor, cosmetic) |
+| Preconditions | Data state, user role, starting screen |
+| Steps | Numbered, one action each |
+| Expected Result | Concrete and observable, as the spec words it |
+| Notes | The spec items it traces to, and what QA must confirm |
+
+The cases cover what the spec mentions: the positive path of every user story, the roles allowed and refused, screen flow edge cases, validation (required fields, formats, lengths, boundary values) and error states, and what triggers background logic. Both files are rendered by a script from the same data, which checks the ID format and order, duplicates, and that every user story has a positive case. The data is also embedded at the end of the `.md` file, in a comment Markdown viewers do not show, so that QA can change the cases later. When the cases are run (in `create-feature` and `fix-bug`), each gets a `Status` and `Evidence`, shown in the `.md` and as two more columns in the `.xlsx`.
+
+This is QA's skill: whichever usecase asks `levi-qa` for test cases, it writes them with this format and these rules.
+
+### How it works
+
+| Step | Who | What happens |
+|---|---|---|
+| 1. Intake | workflow | Reads the feature codes or spec paths in your request. |
+| 2. Find the specs | workflow | Matches each code against `docs/specs/`. A code with no spec is reported, for example "No spec for F003 in docs/specs/". With no code or path, it lists every feature found. |
+| 3. Ask you once | workflow | Tells you the missing specs, then asks in one round: whether to generate for every feature (only when you named none), which spec a code means when several match, and for each output that already exists, whether to replace it or write a new version with a `-YYYYMMDD` suffix. |
+| 4. Analyze | `levi-qa` | Per feature, reads only the spec: its items, a coverage plan, the ambiguities, and whether there is anything testable at all. |
+| 5. Report gaps | workflow | Before any case is written, tells you what each spec lacks. A spec with nothing testable is skipped. |
+| 6. Generate | `levi-qa` | Writes the cases, runs the check script until it passes, reviews what the script cannot check (one action per step, verifiable results, nothing invented), and renders both files. |
+| 7. Verify and clean up | workflow | Runs the check again, confirms both files exist, and deletes the scratch files. |
+| 8. Report | workflow | The number of cases, the file paths, and the spec points to clarify. |
+
+Where the spec is unclear or silent, nothing is decided: the point is written in the case's notes and in the spec ambiguities section.
+
+### Requirements
+
+Node.js 18 or newer, which levi already needs. The Excel file is written without any extra package.
+
+### Scratch files
+
+During the run, QA uses `docs/levi/test-cases/`: `<FeatureID>-analysis.md` (spec items, coverage plan, ambiguities) and `<FeatureID>.json` (the cases both files are rendered from). They are deleted at the end.

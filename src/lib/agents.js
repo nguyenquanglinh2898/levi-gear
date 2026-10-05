@@ -15,6 +15,10 @@ function parseList(value) {
   return value ? value.split(',').map((s) => s.trim()).filter(Boolean) : null;
 }
 
+function joinSections(...parts) {
+  return parts.map((p) => (p || '').trim()).filter(Boolean).join('\n\n') + '\n';
+}
+
 // Reads one agent file. `owner` is the skill that delegates to it, or null for team agents.
 function readAgent(file, label, expectedName, owner, appendix = '') {
   const { data, body } = parse(fs.readFileSync(file, 'utf8'));
@@ -33,7 +37,10 @@ function readAgent(file, label, expectedName, owner, appendix = '') {
   return {
     name: data.name,
     description: data.description,
-    body: appendix ? `${body.trim()}\n\n${appendix.trim()}\n` : body,
+    body: joinSections(body, appendix),
+    // Kept apart so that sections can be inserted between them (see role-skills.js).
+    ownBody: body,
+    appendix,
     owner,
     tools,
     model: data.model || null,
@@ -52,4 +59,4 @@ function loadTeam() {
     .map((f) => readAgent(path.join(TEAM_DIR, f), `agents/${f}`, PREFIX + f.slice(0, -3), null, appendix));
 }
 
-module.exports = { PREFIX, CAPABILITIES, MODEL_TIERS, readAgent, loadTeam };
+module.exports = { PREFIX, CAPABILITIES, MODEL_TIERS, joinSections, readAgent, loadTeam };
