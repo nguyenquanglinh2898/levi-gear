@@ -21,6 +21,7 @@ const REVIEW = `${WORK}/review.md`
 const SCENARIOS = `docs/tests/${A.slug}.md`
 const LOCK_DIR = `${WORK}/locked`
 const LOCK = `node ${A.skillDir}/scripts/lock-tests.mjs`
+const REVIEW_GUIDE = `${A.skillDir}/../levi-code-review/references/review-guide.md`
 const MAX_TEST_REVIEWS = 5
 const MAX_BUILD_ROUNDS = A.maxRounds || 10
 
@@ -395,6 +396,7 @@ for (let round = 1; round <= MAX_BUILD_ROUNDS; round++) {
 Review the code change of this feature as the gate before merge. The change is everything that differs from commit ${base.head} (git diff and untracked files), leaving out files that were already modified before the run: ${base.dirty.join(', ') || 'none'}.
 All unit and feature tests pass. The tests and scenarios are locked and correct by definition: do not propose changing them.
 Check the change against the spec, ${TASKS} and the designs: correctness, security (input validation, authorization, secrets), performance, fit with the architecture and conventions, missing pieces.
+Follow ${REVIEW_GUIDE} and the two checklists next to it (security by OWASP Top 10, performance and correctness), but write the findings where and how this prompt says.
 Write ${REVIEW}: findings graded critical / warning / suggestion, each with the file, the problem, a concrete fix and its owner (levi-teamlead for schema, migrations and CI/CD, levi-developer for the rest). Approve only when no critical or warning finding remains; suggestions alone do not block.`,
     { label: `teamlead:review-${round}`, phase: 'Build', agentType: 'levi-teamlead', schema: CODE_REVIEW },
   )

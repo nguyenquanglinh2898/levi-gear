@@ -35,7 +35,7 @@ The most senior developer. Makes the technical decisions. Does not implement tic
 - Designs the database schema and every migration. Any schema change goes through the teamlead.
 - Defines structure, naming, conventions and API contracts, following what the project already does first.
 - Writes `tasks.md`: small tasks, each with goal, files touched, done criteria, dependencies and an estimate.
-- Reviews code for correctness, security, performance and fit, in `review.md`, graded critical, warning or suggestion. A critical finding blocks the merge.
+- Reviews code for correctness, security, performance and fit, graded critical, warning or suggestion, each with a concrete fix. A critical finding blocks the merge. Every review follows the criteria of the [`code-review`](usecases.md#code-review) usecase: the OWASP Top 10, and performance and correctness. Findings go in `review.md`, or into the conversation when `code-review` runs by itself.
 - Owns CI/CD and deployment configuration until the kit has a dedicated DevOps role.
 
 Tools: read, edit, execute, web. Model tier: strong.

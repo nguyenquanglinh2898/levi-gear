@@ -2,7 +2,7 @@
 name: levi-fix-bug
 description: Fix a bug in code that is already merged into the base branch. The developer lists what is unclear in the report and the user confirms it; then, as a Workflow of independent subagents, the developer investigates and fixes it test first (writing unit and feature tests only when the existing ones do not cover the bug) while QA writes the bug's test scenarios; the teamlead reviews every fix once the tests pass, and after its approval QA runs the scenarios end to end in a headless browser and sends the failing ones back to the developer. Tests and scenarios are never changed to make them pass. A problem in work that is not merged yet is a revision of that work, not a bug. Fits requests such as "fix this bug", "X is broken", "X shows the wrong value", "sửa bug X", "lỗi X".
 argument-hint: "<what goes wrong, how to reproduce it, and screenshots or logs if you have them>"
-requires: create-feature
+requires: create-feature, code-review
 ---
 
 # Fix a bug
@@ -37,7 +37,7 @@ The work has two halves:
 | `docs/levi/<slug>/review.md` | Teamlead | Scratch: review findings. Deleted at the end |
 | `docs/levi/<slug>/locked/` | Workflow | Scratch: copies and hashes of the locked files. Deleted at the end |
 
-`<slug>` is a short kebab-case name for the bug, in English (for example `cart-total-rounding`). `levi-create-feature/` and `levi-design/` are installed next to this skill's folder.
+`<slug>` is a short kebab-case name for the bug, in English (for example `cart-total-rounding`). `levi-create-feature/`, `levi-design/` and `levi-code-review/` are installed next to this skill's folder.
 
 ## Steps
 
@@ -90,7 +90,7 @@ The steps `workflow.js` runs, and the ones you run when there is no Workflow too
 5. **Rounds** (at most 10 unless raised), each starting with a fresh `levi-developer` call:
    1. *Fix.* The developer fixes the code: first as planned in `investigation.md`, later what the last round sent back. It fixes the cause, not the symptom.
    2. *Tests.* `lock-tests.mjs verify` on the tests (any changed test is restored and the developer is told), then the bug's tests, then the whole suite. A failure goes back to the developer.
-   3. *Review.* Once the tests pass, a fresh `levi-teamlead` call reviews the change since the baseline: the root cause fixed everywhere, what the spec, designs and confirmed points expect, nothing else broken, security, performance, fit. It writes `review.md`. Critical or warning findings go back to the developer.
+   3. *Review.* Once the tests pass, a fresh `levi-teamlead` call reviews the change since the baseline: the root cause fixed everywhere, what the spec, designs and confirmed points expect, nothing else broken, security, performance, fit, following `levi-code-review/references/review-guide.md` and its checklists. It writes `review.md`. Critical or warning findings go back to the developer.
    4. *E2E.* Once the review approves, `levi-qa` runs every scenario in a headless browser (the project's E2E runner such as Playwright, or a browser tool; through the API or CLI when there is no UI) and writes PASS or FAIL for each; then `lock-tests.mjs verify` on the scenarios. Failing scenarios go back to the developer, and the next round runs tests, review and E2E again.
    5. The run is done when the review approves and every scenario passes.
 

@@ -2,7 +2,7 @@
 name: levi-create-feature
 description: Build a new feature end to end, spec first and test first. Finds or writes the spec (confirmed with the user), the brainstorming plan and, for UI work, the designs; then the developer writes unit and feature tests and QA writes numbered test scenarios, both from the spec and reviewed against it; they are locked, and the developer writes the code until every test passes, the teamlead approves the code review, and then QA passes every scenario end to end in a headless browser. Tests and scenarios are never changed to make them pass. On Claude Code the implementation runs as a Workflow of independent subagents. Fits requests such as "build feature X", "implement X", "add X to the app", "triển khai tính năng X", "thêm tính năng X".
 argument-hint: "<the feature to build, and the spec if you have one>"
-requires: spec-writing, brainstorming, design
+requires: spec-writing, brainstorming, design, code-review
 ---
 
 # Create a feature
@@ -35,7 +35,7 @@ The work has two halves:
 | `docs/levi/<slug>/review.md` | Teamlead | Scratch: code review findings. Deleted at the end |
 | `docs/levi/<slug>/locked/` | Workflow | Scratch: copies and hashes of the locked files. Deleted at the end |
 
-`<slug>` is a short kebab-case name for the feature, in English (for example `export-orders-csv`). The other usecases are installed next to this one: their `SKILL.md` files are in the sibling folders `levi-spec-writing/`, `levi-brainstorming/` and `levi-design/`. When this file says "run the X flow", read that `SKILL.md` and follow its steps with the given subject, then come back here.
+`<slug>` is a short kebab-case name for the feature, in English (for example `export-orders-csv`). The other usecases are installed next to this one: their `SKILL.md` files are in the sibling folders `levi-spec-writing/`, `levi-brainstorming/`, `levi-design/` and `levi-code-review/`. When this file says "run the X flow", read that `SKILL.md` and follow its steps with the given subject, then come back here.
 
 ## Steps
 
@@ -86,7 +86,7 @@ The steps the Workflow runs, and the ones you run when there is no Workflow tool
 6. **Build**, in rounds (at most 10 unless raised), until the teamlead approves and every scenario passes:
    1. *Code.* First round: each batch in order, the tasks of a batch in parallel, each by its owner (`levi-developer`, or `levi-teamlead` for schema, migrations and CI/CD). Later rounds: the owners fix exactly what the last round found.
    2. *Gate.* Run `lock-tests.mjs verify docs/levi/<slug>/locked` (it restores any locked file that was changed), then the new tests, then the whole suite. Any restored file, failing test or regression sends the round back to the developer with the failures.
-   3. *Review* — once the tests pass, a fresh `levi-teamlead` call reviews the change since the baseline against the spec, `tasks.md` and the designs (correctness, security, performance, fit), writes `review.md` and approves only when no critical or warning finding is left. Findings go back to their owners, and the round starts again.
+   3. *Review* — once the tests pass, a fresh `levi-teamlead` call reviews the change since the baseline against the spec, `tasks.md` and the designs (correctness, security, performance, fit), following `levi-code-review/references/review-guide.md` and its checklists, writes `review.md` and approves only when no critical or warning finding is left. Findings go back to their owners, and the round starts again.
    4. *E2E* — `levi-qa`, only after the review approves. Starts the app, runs every scenario in a headless browser (the project's E2E runner such as Playwright, or a browser tool; through the API or CLI when there is no UI), writes PASS or FAIL and the evidence for each, and stops the app. Then `verify` again: if QA changed a scenario, it is restored and E2E runs again. Any scenario that is not PASS goes back to the developer with the evidence, and the next round runs code, gate, review and E2E again.
    5. The run is done when the review approves and every scenario passes.
 

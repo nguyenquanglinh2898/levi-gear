@@ -20,6 +20,7 @@ const INVESTIGATION = `${WORK}/investigation.md`
 const REVIEW = `${WORK}/review.md`
 const SCENARIOS = `docs/tests/bugs/${A.slug}.md`
 const LOCK = `node ${A.skillDir}/../levi-create-feature/scripts/lock-tests.mjs`
+const REVIEW_GUIDE = `${A.skillDir}/../levi-code-review/references/review-guide.md`
 const LOCK_TESTS = `${WORK}/locked/tests`
 const LOCK_SCENARIOS = `${WORK}/locked/scenarios`
 const MAX_RED = 3
@@ -238,6 +239,7 @@ for (let round = 1; round <= MAX_ROUNDS; round++) {
 Review the developer's fix of this bug. The change is everything that differs from commit ${base.head} (git diff and untracked files), leaving out files that were already modified before the run: ${base.dirty.join(', ') || 'none'}.
 The unit and feature tests pass. They are locked: do not propose changing them.
 Check that the fix removes the root cause rather than the symptom, everywhere it occurs; that it does what the spec, the designs and the confirmed points expect; that it breaks nothing else; and its security (input validation, authorization, secrets), performance and fit with the architecture and conventions.
+Follow ${REVIEW_GUIDE} and the two checklists next to it (security by OWASP Top 10, performance and correctness), but write the findings where and how this prompt says.
 Write ${REVIEW}: findings graded critical / warning / suggestion, each with the file, the problem and a concrete fix. Approve only when no critical or warning finding remains; suggestions alone do not block.`,
     { label: `teamlead:review-${round}`, phase: 'Fix', agentType: 'levi-teamlead', schema: CODE_REVIEW },
   )

@@ -9,6 +9,7 @@ A usecase is a self-contained workflow, installed as a skill named `levi-<id>`. 
 | [`design`](#design) | Draws SVG designs with the Designer from a text description, images or videos you upload, or both |
 | [`create-feature`](#create-feature) | Builds a feature spec first and test first: tests and scenarios from the spec are locked, and the code is fixed until the tests pass, the teamlead approves, and every scenario passes end to end |
 | [`fix-bug`](#fix-bug) | Fixes a bug in merged code: the developer clarifies it with you, then fixes it test first while QA writes scenarios; the teamlead reviews and QA tests end to end until everything passes |
+| [`code-review`](#code-review) | The teamlead reviews a pull request, a branch, commits, files or your uncommitted changes for security (OWASP Top 10), performance and correctness, and suggests a fix for every finding. Nothing is changed |
 
 To write your own, see [Authoring usecases](authoring-usecases.md).
 
@@ -223,7 +224,7 @@ Build a feature end to end, the spec-driven way: the spec decides, the tests and
 
 Fits requests such as "build feature X", "implement X" and "add X to the app".
 
-Installing it also installs `spec-writing`, `brainstorming` and `design`, which it reuses.
+Installing it also installs `spec-writing`, `brainstorming`, `design` and `code-review`, which it reuses.
 
 ### What you get
 
@@ -286,7 +287,7 @@ Fix a bug with the team. The developer first lists what is unclear and you confi
 
 Fits requests such as "fix this bug", "X is broken" and "X shows the wrong value".
 
-Installing it also installs `create-feature` (and what that one requires): `fix-bug` uses its test lock script.
+Installing it also installs `create-feature` (and what that one requires), whose test lock script it uses, and `code-review`, whose criteria the teamlead reviews by.
 
 ### What counts as a bug
 
@@ -331,3 +332,44 @@ A bug is a defect in feature code that is already **merged into the base branch*
 ### Scratch files
 
 `docs/levi/<slug>/` holds `report.md` (your report), `confirmed.md` (the questions and your answers), `investigation.md` (root cause and plan), `review.md` (the review), `locked/` (the snapshot of the locked files) and, for a video, `frames/`. It is deleted when the fix is done, and kept when the run stops.
+
+## code-review
+
+```text
+/levi-code-review <pull request link, branch, commit range or path; empty for the uncommitted changes>
+```
+
+The teamlead reviews code and suggests a fix for every problem it finds. Nothing is changed: no file, no commit, no comment on the pull request. The review is given in the conversation.
+
+Fits requests such as "review this PR", "review my changes" and "check this code for security issues".
+
+### What it reviews
+
+| You give | It reviews |
+|---|---|
+| A pull request link | The pull request, read with `gh` (which must be installed and logged in) |
+| A branch | The branch against the base branch |
+| A commit or a range `a..b` | Those commits |
+| Files or folders | Those files in full |
+| Nothing | Your uncommitted changes, or the current branch against the base branch when there are none |
+
+You can narrow the focus, for example "only security".
+
+### What it checks
+
+- **Security**, by OWASP Top 10 category: broken access control, cryptographic failures and sensitive data exposure, injection and XSS, insecure design, security misconfiguration and XXE, vulnerable and outdated components, broken authentication, insecure deserialization and other integrity failures, missing security logging, SSRF, and checks that fail open.
+- **Performance and correctness**: N+1 queries, missing indexes, unbounded work, inefficient algorithms, race conditions, transactions, memory and resource leaks, error handling, logic and edge cases, and breaking API changes.
+
+The criteria are in `references/` of the skill: `review-guide.md` (how to review, severities, finding format) and the checklists `security.md` and `performance-and-correctness.md`. The teamlead review of `create-feature` and `fix-bug` follows the same criteria.
+
+### What you get
+
+A verdict (**Approve** or **Request changes**), then the findings from critical to suggestion. Each finding has its location, the problem, a concrete case where it fails, and the suggested fix:
+
+| Severity | Meaning | Blocks merge |
+|---|---|---|
+| critical | Exploitable vulnerability, leaked secret, data loss, a crash on a main path, a breaking change with no migration | Yes |
+| warning | A real defect under realistic conditions, such as an N+1 on a list, a missing index, a race or an unhandled error | Yes |
+| suggestion | Worth doing, not wrong today | No |
+
+It ends with what the teamlead could not check, and any questions.
