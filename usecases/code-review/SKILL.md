@@ -28,6 +28,10 @@ skill-guide: references/review-guide.md
 
 Nothing is written into the project. The review is given in the conversation.
 
+## Codex runner
+
+On Codex, use [`references/codex-runner.md`](references/codex-runner.md). This workflow is deliberately stateless: its single read-only review dispatch is safe to restart after an interruption.
+
 ## Steps
 
 1. **Target.** Work out what to review from the request:

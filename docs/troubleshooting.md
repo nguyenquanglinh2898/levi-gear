@@ -56,7 +56,7 @@ Team agents never ask you directly; they return questions and the usecase's work
 
 ## Files left behind in `docs/levi/`
 
-A usecase writes scratch files there during a run and deletes them at the end. An interrupted run can leave them. They are safe to delete.
+A usecase writes scratch files there during a run and deletes them at the end. An interrupted Codex run may also leave `run.json`: it is the resume checkpoint. Invoke the same usecase again and let it read that file, or inspect it with `node .agents/skills/levi-<usecase>/scripts/codex-run-state.mjs status docs/levi/<slug>`. Delete the folder only when you intentionally abandon the run; ordinary scratch files beside `run.json` are safe to delete only after doing so.
 
 ## Where to look for what changed
 

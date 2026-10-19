@@ -26,6 +26,7 @@ skill-guide: references/test-case-guide.md
 | `docs/tests/<base>.xlsx` | QA | **Deliverable**: one sheet, one row per case, columns `ID, Title, Category, Priority, Preconditions, Steps, Expected Result, Notes` |
 | `docs/levi/test-cases/<FeatureID>-analysis.md` | QA | Scratch: spec items, coverage plan, ambiguities, readiness |
 | `docs/levi/test-cases/<FeatureID>.json` | QA | Scratch: the cases the two deliverables are rendered from |
+| `docs/levi/test-cases/selection.md` | Workflow | Scratch: the confirmed feature list, output bases and overwrite choices for a resumable Codex run |
 | `references/test-case-guide.md` | - | How QA analyzes the spec and writes the cases |
 | `scripts/render-test-cases.mjs` | - | Checks the cases and renders both deliverables from them, so they always agree. The cases are also embedded in the `.md`, so QA can change them later |
 
@@ -39,6 +40,10 @@ A feature is one spec file, or one folder of spec files, under `docs/specs/` (se
 | Feature slug | The file or folder name without extension and without the code, in kebab-case. When nothing is left, the title in ASCII kebab-case |
 | Output `<base>` | `<FeatureID>-<slug>` when the spec has a code (`F001-login`); `<slug>-test-cases` when it has none (`export-orders-csv-test-cases`) |
 | Case ID | `TC-<FeatureID>-<3 digits>`, for example `TC-F001-001` |
+
+## Codex runner
+
+On Codex, use [`references/codex-runner.md`](references/codex-runner.md). It checkpoints selection, per-feature QA work and verification in `docs/levi/test-cases/run.json` so a stopped run does not silently regenerate finished outputs.
 
 ## Steps
 

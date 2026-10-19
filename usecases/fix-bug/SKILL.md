@@ -14,7 +14,7 @@ Fix a bug with the team: `levi-developer` clarifies, investigates and fixes, `le
 The work has two halves:
 
 - **Clarify** (steps 1 to 5), here in the conversation, because it needs the user. The developer lists what is unclear and the user confirms it.
-- **Fix** (step 6), without the user. With a Workflow tool (Claude Code) it runs as `workflow.js`: every agent call is a fresh subagent that sees only the files it is given, and the developer and QA work at the same time without reading each other's work. Without one, you run the same steps one by one.
+- **Fix** (step 6), without the user. Claude Code runs `workflow.js`; Codex uses the durable runner in [`references/codex-runner.md`](references/codex-runner.md). Every agent call is a fresh subagent that sees only the files it is given, and the developer and QA work at the same time without reading each other's work.
 
 ## The rules that never bend
 
@@ -67,14 +67,15 @@ The work has two halves:
      ```
 
      Set `allMerged` to false when step 2 found unmerged work.
-   - *Without a Workflow tool:* run the steps under [Workflow](#workflow) below yourself, in order, each agent call as a new subagent call that gets only the paths and instructions written there.
+   - *On Codex:* follow [`references/codex-runner.md`](references/codex-runner.md), which persists `docs/levi/<slug>/run.json`, then run the steps under [Workflow](#workflow) through that runner.
+   - *Other tools without a Workflow tool:* run the steps under [Workflow](#workflow) below yourself, in order, each agent call as a new subagent call that gets only the paths and instructions written there.
 7. **Act on the result.**
    - `done`: go to step 8.
    - `questions`: an agent found a point that is still open. Ask the user, append the answers to `confirmed.md`, and run step 6 again.
    - `not_a_bug`: the developer found that the code does what the spec and the confirmed points expect. Tell the user why, clean up (step 8) and stop.
    - `unmerged`: the root cause is in code that is not merged into the base branch. Tell the user it is a revision of unmerged work, not a bug, with the root cause and its locations. Clean up and stop. The code was not changed.
    - `blocked`: something outside the code stops the work (the app cannot start, a service or credential is missing, no test could be made to fail on the bug). Tell the user the stage, the detail and what they need to provide. Keep `docs/levi/<slug>/` and run step 6 again when they say to.
-   - `stalled`: the rounds ran out (10 by default) and something still fails. Tell the user what failed last. If they want to go on, in the same session call the Workflow tool again with `resumeFromRunId` and a higher `maxRounds`. Tests and test cases still do not change.
+   - `stalled`: the rounds ran out (10 by default) and something still fails. Tell the user what failed last. On Claude Code, continue in the same session with `resumeFromRunId` and a higher `maxRounds`; on Codex, keep `run.json` and resume the active `build` stage when the user asks to continue. Tests and test cases still do not change.
 8. **Clean up.** Delete `docs/levi/<slug>/`, then `docs/levi` if it is empty. Keep everything else.
 9. **Report.** Tell the user: the root cause and where it was; the tests that cover the bug (written now, or existing ones) and the command that runs them; the test case files with their result (for example `4/4 PASS`); how many rounds it took; the review outcome and the suggestions left open; the files changed (from `git status`); and that nothing was committed.
 

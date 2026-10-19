@@ -6,6 +6,8 @@ const { withRoleSkills } = require('./role-skills');
 const { setField } = require('./frontmatter');
 const { renderRouter } = require('./router');
 
+const CODEX_RUN_STATE = path.join(__dirname, '..', 'runtime', 'codex-run-state.mjs');
+
 // Group keys say which part of the kit a file belongs to; they decide where its hash is
 // recorded in .levi.json.
 const usecaseGroup = (id) => `usecase:${id}`;
@@ -33,7 +35,12 @@ function addSkill(out, usecase, dir) {
     if (rel === 'SKILL.md') content = setField(content.toString('utf8'), 'disable-model-invocation', 'true');
     put(out, path.posix.join(root, rel), content, usecaseGroup(usecase.id));
   }
-  if (dir === CODEX_SKILL_DIR) put(out, path.posix.join(root, 'agents/openai.yaml'), CODEX_POLICY, usecaseGroup(usecase.id));
+  if (dir === CODEX_SKILL_DIR) {
+    put(out, path.posix.join(root, 'agents/openai.yaml'), CODEX_POLICY, usecaseGroup(usecase.id));
+    // The source skills remain portable Markdown. Codex gets this small durable-state
+    // helper so its dedicated runners can resume an interrupted run from files.
+    put(out, path.posix.join(root, 'scripts/codex-run-state.mjs'), fs.readFileSync(CODEX_RUN_STATE), usecaseGroup(usecase.id));
+  }
 }
 
 // `prepare` adapts an agent to one tool before it is rendered (team agents get their role skills).

@@ -33,6 +33,10 @@ A design is built from what the user gave: the text, the images, the frames of t
 
 `<slug>` is a short kebab-case name for what is designed, in English (for example `login-screen`). Create folders as needed. Pass the designer the exact paths it should read and write. The files the user uploaded are the user's: never move, edit or delete them.
 
+## Codex runner
+
+On Codex, use [`references/codex-runner.md`](references/codex-runner.md). It checkpoints reference preparation, drawing and validation in `docs/levi/<slug>/run.json` so a stopped run resumes safely.
+
 ## Steps
 
 1. **Intake.** The request is the text plus the attachments. If there is neither text nor an attachment, ask what to design and stop. Derive the slug. List every image and video with its file path. Note the user's intent for each: recreate it, take its style, or extract its flow.

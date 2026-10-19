@@ -24,6 +24,10 @@ This usecase plans; it does not write specs. Never create or edit anything under
 
 `<slug>` is a short kebab-case name for the problem, in English (for example `export-orders-csv`). Create folders as needed. Pass each agent the exact paths it should read and write. When the run finishes, only the plan is left behind (and the spec, untouched, if the project had one).
 
+## Codex runner
+
+On Codex, use [`references/codex-runner.md`](references/codex-runner.md). It records the planning stage in `docs/levi/<slug>/run.json`, so a stopped run resumes from its artifact checkpoint rather than from conversation memory.
+
 ## Steps
 
 1. **Intake.** The request is the problem. If it is empty, ask what to brainstorm and stop. Derive the slug and a plain-language problem name.
