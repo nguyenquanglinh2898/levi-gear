@@ -5,6 +5,9 @@
   "bin": {
     "levi": "./bin/levi.js"
   },
+  "scripts": {
+    "test": "node --test test/codex-runtime.test.mjs"
+  },
   "files": [
     "agents",
     "bin",

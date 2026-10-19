@@ -56,7 +56,7 @@ So the skill folders written depend on your tool selection:
 | `codex,copilot` | `.agents/skills` |
 | `claude,codex` or all three | `.claude/skills` and `.agents/skills` |
 
-A skill folder holds the usecase's `SKILL.md` plus everything else in the usecase folder except `agents/` (references, scripts). In `.agents/skills`, levi also writes `agents/openai.yaml` for Codex.
+A skill folder holds the usecase's `SKILL.md` plus everything else in the usecase folder except `agents/` (references, scripts). In `.agents/skills`, levi also writes `agents/openai.yaml` for Codex and injects `scripts/codex-run-state.mjs`, the durable checkpoint helper used by multi-stage Codex workflows.
 
 ### Subagents
 

@@ -38,7 +38,7 @@ The body is the workflow. Keep the workflow in this file: the entry point reads 
 
 To reuse another usecase, list it in `requires` and tell the workflow to read its `SKILL.md` in the sibling folder (`levi-<id>/SKILL.md`) and follow it. Installed skills sit side by side in each tool's skill folder.
 
-A usecase may ship a Claude Code Workflow script (for example `workflow.js`) to run independent subagents from code. The tool calls it by its path in the skill folder. Other tools have no Workflow tool, so `SKILL.md` must also describe the same steps for them to run one by one. See `usecases/create-feature/`.
+A usecase may ship a Claude Code Workflow script (for example `workflow.js`) to run independent subagents from code. The tool calls it by its path in the skill folder. It is not a portable Node program. For Codex, write a durable runner in the skill (normally a focused reference) that uses the installed `scripts/codex-run-state.mjs` helper to persist the current stage and artifacts in `docs/levi/<slug>/run.json`; resume from that file, never from chat history. Short, read-only single-agent usecases can be retried safely instead. See `usecases/create-feature/`.
 
 ## Role skills
 
@@ -102,7 +102,7 @@ The kit is loaded and validated before every command writes anything. These fail
 
 ## Test
 
-There is no test suite. Test in a scratch project:
+There is no repository-wide test suite. Test in a scratch project:
 
 ```bash
 mkdir /tmp/scratch && cd /tmp/scratch
@@ -111,6 +111,8 @@ node /path/to/levi-gear/bin/levi.js status
 ```
 
 Inspect the generated files for each tool. Then change a generated file and run `status` and `update` to confirm that your edit is kept. When you can, run the usecase in each real client.
+
+For a stateful Codex usecase, also interrupt a run in each nonterminal stage, start a fresh chat, run the usecase again and confirm it reads `run.json`, does not repeat completed artifacts, and resumes the recorded stage. Test `wait`, `block` and `resume`, as well as a completed run's cleanup.
 
 ## Release
 

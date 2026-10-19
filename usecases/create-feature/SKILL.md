@@ -12,7 +12,7 @@ Build a feature the spec-driven way: **the spec decides, the tests and scenarios
 The work has two halves:
 
 - **Prepare** (steps 1 to 5), here in the conversation, because it needs the user: the spec, the brainstorming plan and the designs. It reuses the `spec-writing`, `brainstorming` and `design` usecases.
-- **Implement** (step 6), without the user: tests, scenarios, code, end-to-end runs and code review. Every agent call is a fresh, independent subagent that sees only the files it is given, never the conversation or another agent's reasoning. With a Workflow tool (Claude Code) it runs as `workflow.js`; otherwise you run the same steps one by one.
+- **Implement** (step 6), without the user: tests, scenarios, code, end-to-end runs and code review. Every agent call is a fresh, independent subagent that sees only the files it is given, never the conversation or another agent's reasoning. Claude Code runs `workflow.js`; Codex uses the durable runner in [`references/codex-runner.md`](references/codex-runner.md).
 
 ## The rules that never bend
 
@@ -66,12 +66,13 @@ The work has two halves:
      ```
 
      The script runs the steps under [Implementation](#implementation) below and returns a result with a `status`. Follow its progress with the user only when they ask.
-   - *Without a Workflow tool:* run the steps under [Implementation](#implementation) yourself, in order, each agent call as a new subagent call that gets only the paths and instructions written there.
+   - *On Codex:* follow [`references/codex-runner.md`](references/codex-runner.md). It persists the stage in `docs/levi/<slug>/run.json`, so a stopped run resumes from the recorded stage rather than restarting. Run the steps under [Implementation](#implementation) through that runner, each agent call as a new named subagent call that gets only the paths and instructions written there.
+   - *Other tools without a Workflow tool:* run the steps under [Implementation](#implementation) yourself, in order, each agent call as a new subagent call that gets only the paths and instructions written there.
 7. **Act on the result.**
    - `done`: go to step 8.
    - `spec_questions`: the spec is silent or unclear on a point the tests depend on. Ask the user the questions in one round, run the `spec-writing` flow in update mode with the answers, then run step 6 again from the start.
    - `blocked`: something outside the code stops the work (the app cannot start, a service or a credential is missing, an agent could not finish). Tell the user the stage and the detail, and what they need to provide. Keep `docs/levi/<slug>/`. Run step 6 again when they say to.
-   - `stalled`: the build rounds ran out (10 by default) and something still fails. Tell the user what failed last. If they want to go on, in the same session call the Workflow tool again with `resumeFromRunId` and a higher `maxRounds` in `args`: finished agent calls are reused and the build continues. Tests and test cases still do not change.
+   - `stalled`: the build rounds ran out (10 by default) and something still fails. Tell the user what failed last. On Claude Code, continue in the same session with `resumeFromRunId` and a higher `maxRounds`; on Codex, keep `run.json` and resume its active `build` stage after the user asks to continue. Tests and test cases still do not change.
 8. **Clean up.** Delete `docs/levi/<slug>/` (`tasks.md`, `review.md`, `locked/`), then `docs/levi` if it is empty. Keep everything else: spec, plan, designs, tests, test cases with their results, code.
 9. **Report.** Tell the user: the spec, plan and designs used (and which were created in this run); the test files and the command that runs them; the test case files with their result (for example `12/12 PASS`); how many build rounds it took; the review outcome and the suggestions left open; the files changed (from `git status`); and that nothing was committed.
 

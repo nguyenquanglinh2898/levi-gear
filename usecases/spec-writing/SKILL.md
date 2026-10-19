@@ -22,6 +22,10 @@ A spec is a promise to the rest of the team: **a line goes into the spec only wh
 
 `<slug>` is a short kebab-case name for the subject, in English (for example `export-orders-csv`). Create folders as needed. Pass the PM the exact paths it should read and write. Only the PM touches either file.
 
+## Codex runner
+
+On Codex, use [`references/codex-runner.md`](references/codex-runner.md). It persists question rounds and the selected output in `docs/levi/<slug>/run.json`, allowing the run to continue after an interruption.
+
 ## Steps
 
 1. **Intake.** The request is the subject. If it is empty, ask what the spec is about and stop. Derive the slug. Note every file or link the user mentioned: they are sources.

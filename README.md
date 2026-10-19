@@ -55,7 +55,7 @@ Each agent does only its own role's work and writes only the files it owns; work
 
 Some usecases are also a role's skill: `spec-writing` for the PM, `design` for the designer, `code-review` for the teamlead and `generate-test-scenarios` for QA. They are installed with every install, and the agent follows that skill's guide whenever it gets that kind of task, from any usecase. A usecase declares this with `skill-for`, `skill-when` and `skill-guide` in its `SKILL.md`.
 
-The usecase's skill or workflow runs the team: it calls each member in turn. The PM only decides who owns each task and records it; the workflow follows that. Members hand work to each other through files in a work folder (`docs/levi/<slug>/` by default): `spec.md`, `status.md`, `docs/designs/`, `architecture.md`, `tasks.md`, `review.md`, `test-plan.md`, `test-report.md`. The shared rules live in `agents/_team-protocol.md`, which is appended to every team agent.
+The usecase's skill or workflow runs the team: it calls each member in turn. The PM only decides who owns each task and records it; the workflow follows that. Members hand work to each other through files in a work folder (`docs/levi/<slug>/` by default): `spec.md`, `status.md`, `docs/designs/`, `architecture.md`, `tasks.md`, `review.md`, `test-plan.md`, `test-report.md`. On Codex, every installed skill also gets a small `scripts/codex-run-state.mjs` helper; long runs record `run.json` in that work folder so they can resume after an interruption. The shared rules live in `agents/_team-protocol.md`, which is appended to every team agent.
 
 ## Update
 

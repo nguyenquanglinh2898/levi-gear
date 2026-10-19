@@ -14,6 +14,8 @@ A usecase is a self-contained workflow, installed as a skill named `levi-<id>`. 
 
 Four of them are also the skills of team roles, and are installed with every install: `spec-writing` (PM), `design` (designer), `code-review` (teamlead) and `generate-test-scenarios` (QA). See [Role skills](team.md#role-skills).
 
+On Codex, every multi-stage usecase keeps a `run.json` checkpoint in its `docs/levi/` work folder. Reinvoke the same usecase after an interruption: it reads that checkpoint and resumes its active stage. `code-review` is a single read-only agent call, so it is safely rerun instead of checkpointed.
+
 To write your own, see [Authoring usecases](authoring-usecases.md).
 
 ## brainstorming
@@ -246,7 +248,7 @@ Installing it also installs `spec-writing`, `brainstorming`, `design`, `code-rev
 | 2. Plan | workflow, `brainstorming` | Uses the matching plan in `docs/brainstorming/`, or runs the `brainstorming` flow. |
 | 3. Designs | workflow, `design` | When the feature has a UI: uses the matching folder in `docs/designs/`, or runs the `design` flow. |
 
-**Implement, without you.** On Claude Code this runs as a Workflow, where every step is a fresh, independent subagent that sees only the files it is given. On Codex and Copilot the same steps run one after another as subagent calls.
+**Implement, without you.** On Claude Code this runs as a Workflow, where every step is a fresh, independent subagent that sees only the files it is given. On Codex, a durable runner persists `docs/levi/<slug>/run.json` and dispatches the same named subagents stage by stage; after an interruption it resumes from that checkpoint. On Copilot the same steps run one after another as subagent calls.
 
 | Step | Who | What happens |
 |---|---|---|
@@ -269,7 +271,7 @@ The developer's tests and QA's test cases are checked against the spec by a fres
 |---|---|---|
 | Spec questions | The spec is silent or unclear on a point the tests need | You answer, the PM updates the spec, and implementation starts again |
 | Blocked | Something outside the code: the app cannot start, a service or credential is missing | You get the stage and what to provide; the work folder is kept |
-| Stalled | 10 build rounds and something still fails | You get the last failures; in the same Claude Code session the run can be resumed with more rounds |
+| Stalled | 10 build rounds and something still fails | You get the last failures; Claude Code resumes in the same Workflow session, while Codex resumes the active build stage from `run.json` |
 
 ### Requirements
 
@@ -311,7 +313,7 @@ A bug is a defect in feature code that is already **merged into the base branch*
 | 1. Intake | workflow | Reads the report and attachments, checks whether all code is merged into the base branch, writes the report down, and finds the spec and designs of the feature. |
 | 2. Clarify | `levi-developer` | Lists every unclear point that would change the fix or its tests, with options. You answer; the answers are kept word for word. Up to three rounds, until nothing is open. If the code does what the spec says, it is a change, not a bug, and the run stops. |
 
-**Fix, without you.** On Claude Code this runs as a Workflow of fresh, independent subagents; on Codex and Copilot the same steps run one after another.
+**Fix, without you.** On Claude Code this runs as a Workflow of fresh, independent subagents; on Codex a durable runner resumes from `docs/levi/<slug>/run.json`; on Copilot the same steps run one after another.
 
 | Step | Who | What happens |
 |---|---|---|
@@ -330,7 +332,7 @@ A bug is a defect in feature code that is already **merged into the base branch*
 | Unmerged | The root cause is in code that is not merged: it is a revision of that work. Nothing is changed |
 | Questions | An agent found a point still open; you answer and the fix runs again |
 | Blocked | The app cannot start, a service or credential is missing, or no test could be made to fail on the bug |
-| Stalled | 10 rounds and something still fails; in the same Claude Code session the run can be resumed with more rounds |
+| Stalled | 10 rounds and something still fails; Claude Code can resume the Workflow session, while Codex resumes the active build stage from `run.json` |
 
 ### Scratch files
 
