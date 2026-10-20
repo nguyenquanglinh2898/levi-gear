@@ -118,6 +118,7 @@ Agents use the folder the workflow gives them. If it gives none, they use `docs/
 | `review.md` | Teamlead: code review findings |
 | Database schema, migrations, CI/CD and deployment config | Teamlead |
 | Application code, unit and integration tests, technical docs of the code | Developer |
+| `choices/<role>-<topic>.md` | Whoever made the choice: one small file per choice picked instead of asked (see [Unattended runs](unattended-runs.md)) |
 | `test-plan.md` | QA: test plan and test cases |
 | `docs/tests/` | QA: numbered test scenarios and test cases, with their PASS or FAIL results once run |
 | `test-report.md` | QA: results, bugs, sign-off |

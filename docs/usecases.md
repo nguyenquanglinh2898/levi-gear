@@ -57,6 +57,16 @@ Chosen approach, what was rejected, assumptions, the riskiest task.
 - **Depends on** lists only dependencies that cannot be removed. Tasks are cut to be as independent as possible so that they can run in parallel; when several tasks need the same thing (a data model, an interface, a shared component), it becomes one small foundation task that the others depend on, instead of a chain of tasks waiting on each other.
 - **Notes** appears only when there is something to add, and never holds an undecided point.
 
+### Several features: a plan in phases
+
+When the problem holds several features, the plan is cut into phases so that development stays small and every release runs by itself:
+
+- **Phase 1 is the MVP**: the basic version of every feature the core flow needs, nothing optional.
+- **Each later phase completes one feature**, in order of value and then risk.
+- **Each phase is a release that works on its own.** No phase needs anything from a later phase, and a later phase extends the earlier ones. Every phase ends with its own QA and release-check tasks.
+
+The plan then has a phase table and one task table per phase, with a release check for each phase. A problem with one feature, or with no sensible cut, gets the flat plan above. The PM writes `phases.md` (scratch) before the teamlead breaks the work down.
+
 The table above is illustrative. A real plan also includes design, review, QA and acceptance tasks, not only implementation.
 
 ### How it works
@@ -93,6 +103,7 @@ During the run, the agents use `docs/levi/<slug>/`:
 | `tasks.md` | Teamlead | Task breakdown with suggested roles and estimates |
 | `status.md` | PM | Task assignments |
 | `review.md` | Teamlead | The review decisions for a hard plan. Written only for plans with more than 10 tasks |
+| `phases.md` | PM | The features, the MVP cut and the order of the later phases. Written only when the problem holds several features |
 
 All of them are deleted at the end, and the folder is removed when empty. If a run is interrupted, they may remain; you can delete them.
 
@@ -378,6 +389,16 @@ A verdict (**Approve** or **Request changes**), then the findings from critical 
 | suggestion | Worth doing, not wrong today | No |
 
 It ends with what the teamlead could not check, and any questions.
+
+### Large changes
+
+A reviewer who reads hundreds of files skims, and problems then turn up a few at a time over many review rounds. So a change of **more than 100 reviewable files** (generated files, lock files, vendored code and build output do not count) is not read by one teamlead:
+
+1. A lead teamlead splits the files into slices of at most 100, grouped by what belongs together (a module with its tests, callers and migrations), not by alphabet.
+2. One fresh teamlead call per slice reviews it, all at the same time, and reports every finding in one pass.
+3. The lead teamlead merges the slice reports into the one review: findings with one cause are joined, severities are made consistent, and issues that cross slices are settled by reading both sides.
+
+You get one review, as for a small change. `create-feature` and `fix-bug` do the same in their teamlead review step, on every round. The steps are in `references/large-changes.md` of the skill.
 
 ## generate-test-scenarios
 

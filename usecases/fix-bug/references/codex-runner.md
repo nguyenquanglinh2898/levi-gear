@@ -27,6 +27,6 @@ node <this skill folder>/scripts/codex-run-state.mjs finish docs/levi/<slug> mer
 - `tests`: QA writes and PM-approved scenarios while the developer investigates and produces a failing test. Both tracks are separate; complete only with `investigation.md`, `test-cases.json`, and the rendered scenario files. When the code already does what is expected, use `finish` at this stage and report `not_a_bug`; do not build a change.
 - `merge-check`: run the existing blame/ancestor check when the initial check did not prove all code merged. For unmerged root-cause code, use `finish` at this stage, report `unmerged`, and do not fix it.
 - `lock`: lock the developer tests and QA cases with the existing lock script. Require both lock manifests.
-- `build`: run the existing code → test gate → teamlead review → QA E2E loop. Keep the stage active across all rounds. Complete only after approved review and all cases PASS.
+- `build`: run the existing code → test gate → teamlead review → QA E2E loop (a review of more than 100 reviewable files follows `levi-code-review/references/large-changes.md`: split, parallel slice reviews, one merge). Keep the stage active across all rounds. Complete only after approved review and all cases PASS.
 
 Use installed named roles for every subagent call. The coordinator owns the checkpoint and stages; subagents only read/write their assigned artifacts. Keep dependent work sequential and use parallel calls only for the independent QA and investigation tracks.

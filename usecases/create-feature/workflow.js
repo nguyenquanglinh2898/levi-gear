@@ -315,6 +315,101 @@ const snapped = await snapshotScenarios()
 if (!snapped || snapped.exitCode !== 0) return { status: 'blocked', stage: 'lock', detail: snapped ? snapped.summary : 'the test cases could not be snapshotted' }
 log(`locked ${tests.files.length} test file(s); ${scenarios.scenarioCount} test case(s) kept as QA wrote them`)
 
+const REVIEW_PHASE = 'Build'
+// ---- review of the change: one teamlead, or slices merged by a lead when the change is large ----
+// levi-code-review/references/large-changes.md explains why: one reviewer skims a big change and finds problems a few at a time.
+
+const LARGE_CHANGE = 100 // reviewable files; more than this is reviewed in slices
+const LARGE_GUIDE = `${A.skillDir}/../levi-code-review/references/large-changes.md`
+const FINDING = CODE_REVIEW.properties.findings.items
+const CHANGED = obj({ files: { type: 'array', items: obj({ path: { type: 'string' }, lines: { type: 'integer' } }) } })
+const SLICES = obj({ slices: { type: 'array', items: obj({ title: { type: 'string' }, files: STRINGS, shares: { type: 'string' } }) } })
+const SLICE_REVIEW = obj({ summary: { type: 'string' }, findings: { type: 'array', items: FINDING }, crossSlice: STRINGS, notChecked: STRINGS })
+
+// What is wrong with a split: a slice over the limit, a file in no slice, a file in two slices or not in the change.
+const splitProblems = (slices, paths) => {
+  const placed = slices.flatMap((s) => s.files)
+  return [
+    ...slices.filter((s) => s.files.length > LARGE_CHANGE).map((s) => `slice "${s.title}" has ${s.files.length} files, more than ${LARGE_CHANGE}`),
+    ...paths.filter((p) => !placed.includes(p)).map((p) => `${p} is in no slice`),
+    ...placed.filter((p, i) => placed.indexOf(p) !== i || !paths.includes(p)).map((p) => `${p} is in two slices or not part of the change`),
+  ]
+}
+
+async function splitChange(round, files) {
+  const paths = files.map((f) => f.path)
+  const ask = (note) =>
+    agent(
+      `${CONTEXT}
+
+This change is too large for one reviewer (${paths.length} reviewable files). Split it into slices that are reviewed at the same time, as the "Steps" of ${LARGE_GUIDE} say: at most ${LARGE_CHANGE} files per slice and as few slices as that allows, grouped by what belongs together (a module or feature with its tests, callers, schema and migrations; never by alphabet), every file in exactly one slice. For each slice return a title, its files, and one line on what it shares with the other slices (an interface, a schema, a config). Change nothing and write no file.
+The files, with their changed lines:
+${files.map((f) => `${f.path} (${f.lines})`).join('\n')}${note}`,
+      { label: `teamlead:split-${round}`, phase: REVIEW_PHASE, agentType: 'levi-teamlead', schema: SLICES },
+    )
+  let split = await ask('')
+  let problems = split ? splitProblems(split.slices, paths) : ['no split was returned']
+  if (problems.length) {
+    split = await ask(`\n\nYour previous split was not valid: ${problems.slice(0, 20).join('; ')}. Return the whole corrected split.`)
+    problems = split ? splitProblems(split.slices, paths) : ['no split was returned']
+  }
+  if (!problems.length) return split.slices
+  log(`the lead's split was not usable (${problems[0]}); cutting the file list by path`)
+  const sorted = [...paths].sort()
+  return Array.from({ length: Math.ceil(sorted.length / LARGE_CHANGE) }, (_, i) => ({
+    title: `Files ${i * LARGE_CHANGE + 1}-${Math.min((i + 1) * LARGE_CHANGE, sorted.length)} by path`,
+    files: sorted.slice(i * LARGE_CHANGE, (i + 1) * LARGE_CHANGE),
+    shares: 'unknown: read the other slices as needed',
+  }))
+}
+
+// `brief` says what the review is for and what to check; `output` says where the review goes and what blocks.
+async function reviewChange(round, brief, output) {
+  const changed = await guard(
+    `changed-files-${round}`,
+    `List the reviewable files of the change: every file that differs from commit ${base.head} (git diff --name-only ${base.head}) and every untracked file (git status --porcelain), leaving out files that were already modified before the run (${base.dirty.join(', ') || 'none'}), generated files, lock files, vendored code and build output. Give each path with its number of changed lines (git diff --numstat ${base.head}; the line count for an untracked file).`,
+    CHANGED,
+  )
+  if (!changed) return null
+  const prompt = `${CONTEXT}\n\n${brief}\nFollow ${REVIEW_GUIDE} and the two checklists next to it (security by OWASP Top 10, performance and correctness), but write the findings where and how this prompt says.`
+  if (changed.files.length <= LARGE_CHANGE) {
+    return agent(`${prompt}\n${output}`, { label: `teamlead:review-${round}`, phase: REVIEW_PHASE, agentType: 'levi-teamlead', schema: CODE_REVIEW })
+  }
+
+  log(`round ${round}: ${changed.files.length} reviewable files, so the review is split into slices (${LARGE_GUIDE})`)
+  const slices = await splitChange(round, changed.files)
+  const others = (i) => slices.map((s, j) => (j === i ? null : `- ${s.title} (${s.files.length} files): shares ${s.shares}`)).filter(Boolean).join('\n')
+  const reviewSlice = (s, i) =>
+    agent(
+      `${prompt}
+
+This change is large (${changed.files.length} reviewable files), so ${slices.length} reviewers each review one slice at the same time, and a lead merges their reports. You review slice ${i + 1}: ${s.title}. It shares: ${s.shares}.
+Your files, to review in full:
+${s.files.join('\n')}
+The other slices:
+${others(i)}
+Report every finding you can make a case for in your files, in one pass, whatever the severity: nothing is held for a later round, because the author fixes the whole list at once. When a change in your files breaks or relies on code in another slice, report it on your file and name the other location; what only another slice's reviewer can settle goes in crossSlice. Do not write ${REVIEW} or any other file and change nothing: your reply is the review of this slice. Give no verdict for the whole change. Findings carry the same fields as in a full review.`,
+      { label: `teamlead:review-${round}-slice-${i + 1}`, phase: REVIEW_PHASE, agentType: 'levi-teamlead', schema: SLICE_REVIEW },
+    )
+  const reports = [...(await parallel(slices.map((s, i) => () => reviewSlice(s, i))))]
+  const failed = slices.map((_, i) => i).filter((i) => !reports[i])
+  if (failed.length) {
+    const again = await parallel(failed.map((i) => () => reviewSlice(slices[i], i)))
+    failed.forEach((i, k) => (reports[i] = again[k]))
+  }
+  if (reports.some((r) => !r)) return null
+
+  return agent(
+    `${prompt}
+
+You are the lead teamlead. ${slices.length} reviewers reviewed this large change in slices; ${LARGE_GUIDE} ("Steps", the merge) says how to combine them. Their reports:
+${JSON.stringify(slices.map((s, i) => ({ slice: s.title, files: s.files.length, report: reports[i] })))}
+Merge them into the one review: join findings that have one cause (list every location), give equal problems equal severity, settle each crossSlice item by reading the code on both sides, re-read the location of every critical finding before you keep it, keep every valid finding and add nothing else. Do not approve while any slice lists something in notChecked that matters to the verdict.
+${output}`,
+    { label: `teamlead:review-${round}-merge`, phase: REVIEW_PHASE, agentType: 'levi-teamlead', schema: CODE_REVIEW },
+  )
+}
+
 // ---- 4. Build: implement, tests, review, then E2E, until the review approves and every scenario passes ----
 
 const RULES = LOCKED_RULES(tests.files)
@@ -390,15 +485,12 @@ for (let round = 1; round <= MAX_BUILD_ROUNDS; round++) {
     continue
   }
 
-  const review = await agent(
-    `${CONTEXT}
-
-Review the code change of this feature as the gate before merge. The change is everything that differs from commit ${base.head} (git diff and untracked files), leaving out files that were already modified before the run: ${base.dirty.join(', ') || 'none'}.
+  const review = await reviewChange(
+    round,
+    `Review the code change of this feature as the gate before merge. The change is everything that differs from commit ${base.head} (git diff and untracked files), leaving out files that were already modified before the run: ${base.dirty.join(', ') || 'none'}.
 All unit and feature tests pass. The tests are locked and the test cases are QA's; both are correct by definition: do not propose changing them.
-Check the change against the spec, ${TASKS} and the designs: correctness, security (input validation, authorization, secrets), performance, fit with the architecture and conventions, missing pieces.
-Follow ${REVIEW_GUIDE} and the two checklists next to it (security by OWASP Top 10, performance and correctness), but write the findings where and how this prompt says.
-Write ${REVIEW}: findings graded critical / warning / suggestion, each with the file, the problem, a concrete fix and its owner (levi-teamlead for schema, migrations and CI/CD, levi-developer for the rest). Approve only when no critical or warning finding remains; suggestions alone do not block.`,
-    { label: `teamlead:review-${round}`, phase: 'Build', agentType: 'levi-teamlead', schema: CODE_REVIEW },
+Check the change against the spec, ${TASKS} and the designs: correctness, security (input validation, authorization, secrets), performance, fit with the architecture and conventions, missing pieces.`,
+    `Write ${REVIEW}: findings graded critical / warning / suggestion, each with the file, the problem, a concrete fix and its owner (levi-teamlead for schema, migrations and CI/CD, levi-developer for the rest). Approve only when no critical or warning finding remains; suggestions alone do not block.`,
   )
   if (!review) return { status: 'blocked', stage: 'review', detail: 'the code review did not complete' }
   const blocking = review.findings.filter((f) => f.severity !== 'suggestion')

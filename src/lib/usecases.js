@@ -5,6 +5,8 @@ const { PREFIX, readAgent, loadTeam } = require('./agents');
 
 const ROUTER_NAME = 'levi';
 const KIT_DIR = path.join(__dirname, '..', '..', 'usecases');
+// Rules every usecase follows; appended to each installed SKILL.md. Not a usecase: it is a file, not a folder.
+const RUN_RULES_FILE = path.join(KIT_DIR, '_run-rules.md');
 
 function skillName(id) {
   return PREFIX + id;
@@ -99,7 +101,8 @@ function loadKit() {
   checkNames(usecases, team);
   checkRequires(usecases);
   checkSkillRoles(usecases, team);
-  return { usecases, team };
+  const runRules = fs.existsSync(RUN_RULES_FILE) ? fs.readFileSync(RUN_RULES_FILE, 'utf8').trim() : '';
+  return { usecases, team, runRules };
 }
 
 function listUsecases() {

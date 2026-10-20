@@ -2,11 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const { ROUTER_NAME, skillName } = require('./usecases');
 const { CODEX_SKILL_DIR, CODEX_POLICY, skillDirs, skillDirFor, AGENT_TARGETS } = require('./tools');
+const { joinSections } = require('./agents');
 const { withRoleSkills } = require('./role-skills');
 const { setField } = require('./frontmatter');
 const { renderRouter } = require('./router');
 
 const CODEX_RUN_STATE = path.join(__dirname, '..', 'runtime', 'codex-run-state.mjs');
+const QUOTA_CHECK = path.join(__dirname, '..', 'runtime', 'quota-check.mjs');
 
 // Group keys say which part of the kit a file belongs to; they decide where its hash is
 // recorded in .levi.json.
@@ -28,13 +30,15 @@ function put(out, rel, content, group) {
 
 // Every levi skill runs only when the user invokes it: Claude Code and Copilot read the
 // frontmatter flag, Codex reads agents/openai.yaml (only written where Codex looks).
-function addSkill(out, usecase, dir) {
+function addSkill(out, usecase, dir, runRules) {
   const root = path.posix.join(dir, skillName(usecase.id));
   for (const rel of walk(usecase.dir, true)) {
     let content = fs.readFileSync(path.join(usecase.dir, rel));
-    if (rel === 'SKILL.md') content = setField(content.toString('utf8'), 'disable-model-invocation', 'true');
+    if (rel === 'SKILL.md') content = joinSections(setField(content.toString('utf8'), 'disable-model-invocation', 'true'), runRules);
     put(out, path.posix.join(root, rel), content, usecaseGroup(usecase.id));
   }
+  // The quota guard in the run rules calls this helper, in every tool.
+  put(out, path.posix.join(root, 'scripts/quota-check.mjs'), fs.readFileSync(QUOTA_CHECK), usecaseGroup(usecase.id));
   if (dir === CODEX_SKILL_DIR) {
     put(out, path.posix.join(root, 'agents/openai.yaml'), CODEX_POLICY, usecaseGroup(usecase.id));
     // The source skills remain portable Markdown. Codex gets this small durable-state
@@ -89,7 +93,7 @@ function build(kit, ids, tools) {
     }
     const usecase = byId.get(id);
     present.push(usecase);
-    for (const dir of skillDirs(tools)) addSkill(out, usecase, dir);
+    for (const dir of skillDirs(tools)) addSkill(out, usecase, dir, kit.runRules);
     addAgents(out, usecase.agents, tools, usecaseGroup(id));
   }
   addRouter(out, present, kit.team, tools);
