@@ -1,6 +1,6 @@
 {
   "name": "levi-gear",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "An agentic kit: Agent Skills for Claude Code, Codex and Copilot, installable via npm",
   "bin": {
     "levi": "./bin/levi.js"
