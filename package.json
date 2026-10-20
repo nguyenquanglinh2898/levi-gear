@@ -6,7 +6,7 @@
     "levi": "./bin/levi.js"
   },
   "scripts": {
-    "test": "node --test test/codex-runtime.test.mjs"
+    "test": "node --test test/codex-runtime.test.mjs test/quota-check.test.mjs"
   },
   "files": [
     "agents",

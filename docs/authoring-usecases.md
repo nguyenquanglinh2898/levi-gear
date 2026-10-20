@@ -76,6 +76,7 @@ Rules:
 - The installer appends a note to every subagent description so the tool delegates to it only through its usecase.
 - A usecase id must not reuse a team role name (`pm`, `teamlead`, `developer`, `designer`, `qa`): `levi-<id>` would name both a skill and an agent.
 - Agent names must be unique across the whole kit.
+- `usecases/_run-rules.md` is not a usecase: it holds the run rules (ask everything first, pick instead of ask, quota guard) that the installer appends to every installed `SKILL.md`, and the installer adds `scripts/quota-check.mjs` to every skill folder for the quota guard. Do not restate those rules in a usecase; when a step asks the user, say what the question is and let the rules decide when it is asked. See [Unattended runs](unattended-runs.md).
 - Files in `agents/` whose names start with `_` are not agents. They are appended to every team agent. `_team-protocol.md` is one.
 
 ## Delegating to the team

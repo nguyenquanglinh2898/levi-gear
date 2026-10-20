@@ -15,7 +15,8 @@ Read the two checklists in this folder before you start:
 4. **Follow the data.** Trace every input that crosses a trust boundary (request, file, message, header, environment, third-party response) to where it is used: a query, a shell command, a template, a file path, a URL, a deserializer, a log. Most security findings sit on that path.
 5. **Walk both checklists.** Go through every item that applies to the code. Skip the ones that cannot apply (no XML parsing means no XXE), and do not report items as passed one by one.
 6. **Try to break it.** For each finding, write the concrete case that fails: the input, the timing, the data size or the caller that triggers it. If you cannot make one, it is not a finding.
-7. **Write the fix.** Give the change to make, where, in the project's language, framework and conventions. Prefer the framework's built-in protection (parameterized queries, the ORM's eager loading, the template engine's escaping, the framework's CSRF and auth middleware) over hand-written code.
+7. **Report it all in one pass.** The author fixes everything you list, then resubmits. A finding you hold back, or a lower-severity one you skip, costs another round. List every finding you can make a case for, of every severity, before you return.
+8. **Write the fix.** Give the change to make, where, in the project's language, framework and conventions. Prefer the framework's built-in protection (parameterized queries, the ORM's eager loading, the template engine's escaping, the framework's CSRF and auth middleware) over hand-written code.
 
 ## Scope
 
@@ -23,6 +24,7 @@ Read the two checklists in this folder before you start:
 - A problem that was already there in code the change did not touch is out of scope, unless the change makes it worse or it is a critical security hole. Then report it and mark it **pre-existing**.
 - Leave formatting and naming to the linter, unless they break a convention the project documents.
 - Do not report a problem twice. When one cause shows in several places, report it once and list every location.
+- A change of more than 100 reviewable files is not read by one reviewer: [large-changes.md](large-changes.md) says how it is split and merged. When you review a slice, these rules apply to your slice's files, and the lead's merge produces the one verdict.
 
 ## Severities
 

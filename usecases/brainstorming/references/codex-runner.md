@@ -20,7 +20,7 @@ Create the state after intake has derived the slug. On every new or resumed turn
 - `frame`: find the optional read-only spec and have `levi-pm` write `brief.md` when no spec exists.
 - `explore`: `levi-teamlead` writes `architecture.md` from the basis.
 - `decide`: collect the PM/teamlead questions and the overwrite choice. Mark this stage `wait` before asking the user; after the answer, `resume` and complete it. Do not ask later unless blocked.
-- `finalize`: dispatch the PM and teamlead with the confirmed choices. Complete only when `tasks.md` exists and, when no spec was available, `brief.md` has been updated.
+- `finalize`: dispatch the PM and teamlead with the confirmed choices; when the problem holds several features, the PM writes `phases.md` first and the teamlead plans from it. Complete only when `tasks.md` exists (and `phases.md`, for several features) and, when no spec was available, `brief.md` has been updated.
 - `plan`: `levi-pm` writes `docs/brainstorming/<slug>.md`; if it finds a coverage gap, return only the missing tasks to the teamlead and keep this stage active.
 - `review`: when the plan has more than ten tasks, run the independent teamlead then PM review exactly once. Complete with the final plan; otherwise complete the skipped stage without an artifact.
 - `verify`: check totals and agents in the final plan, then complete with that plan. Only after this stage is complete may cleanup remove the checkpoint and scratch files.

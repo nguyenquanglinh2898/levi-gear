@@ -50,7 +50,7 @@ Run the existing `lock-tests.mjs` commands for the approved test files and QA de
 
 ### `build`
 
-Keep this stage active through all build rounds. In each round, dispatch only the owner of the pending implementation, test, review or E2E finding. Then run the lock verification, feature tests and whole suite. Run the teamlead review only after the test gate passes; run QA E2E only after that review approves. Record every real failure in the next Codex subagent prompt. Complete `build` only after the review approves and every QA case is PASS; pass `review.md`, `<testBase>.md` and `<testBase>.xlsx` as artifacts.
+Keep this stage active through all build rounds. In each round, dispatch only the owner of the pending implementation, test, review or E2E finding. Then run the lock verification, feature tests and whole suite. Run the teamlead review only after the test gate passes; for more than 100 reviewable files follow `levi-code-review/references/large-changes.md` (a teamlead split, parallel teamlead slice reviews that write no file, then one teamlead merge that writes `review.md`). Run QA E2E only after that review approves. Record every real failure in the next Codex subagent prompt. Complete `build` only after the review approves and every QA case is PASS; pass `review.md`, `<testBase>.md` and `<testBase>.xlsx` as artifacts.
 
 ## Dispatch contract
 
