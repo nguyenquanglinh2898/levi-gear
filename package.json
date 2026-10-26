@@ -1,7 +1,7 @@
 {
   "name": "levi-gear",
   "version": "0.3.0",
-  "description": "An agentic kit: Agent Skills for Claude Code, Codex and Copilot that run unattended, write a handoff report near the quota limit and resume after the reset, installable via npm",
+  "description": "An agentic kit: Agent Skills for Claude Code, Codex and Copilot that run unattended and resume with their context kept, installable via npm",
   "bin": {
     "levi": "./bin/levi.js"
   },
