@@ -1,6 +1,6 @@
 {
   "name": "levi-gear",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Summon a whole software team (PM, teamlead, developer, designer, QA) into Claude Code, Codex and Copilot: test-first workflows that run unattended, outlast the quota and never trample your files",
   "bin": {
     "levi": "./bin/levi.js"
