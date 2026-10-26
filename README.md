@@ -1,8 +1,18 @@
 # levi-gear
 
-An agentic kit for AI agents. Each **usecase** is a self-contained workflow (a skill, optionally with subagents) that gets installed for Claude Code, Codex and GitHub Copilot, together with a shared **team** of role agents that usecases can delegate to.
+**Gather a whole software team into your terminal.** levi is an agentic kit that breathes a complete crew into your AI coding tools: a product manager, a teamlead, a developer, a designer and a QA engineer, each with a clear craft and a clear territory. Write a workflow once, and it comes alive in Claude Code, Codex and GitHub Copilot alike.
 
-Requires Node.js 18 or newer. There are no runtime dependencies.
+## Why levi
+
+- **One kit, three tools.** A usecase is written once and installed as native skills and subagents for Claude Code, Codex and GitHub Copilot.
+- **A team, not a lone assistant.** Five role agents, each owning only its own files, pass work to one another through plain files in a shared work folder, so every hand-off leaves a trail you can read.
+- **Craft from idea to release.** Seven ready usecases carry work from a vague idea to a verified result: brainstorming, spec writing, design, test-first feature building, bug fixing, code review and test scenarios.
+- **Tests that cannot be bent.** In `create-feature` and `fix-bug` the tests come first and are locked, and QA writes its test cases from the spec alone, so the code is fixed until the proof passes.
+- **Ask once, then run alone.** All questions are gathered up front; afterwards the run proceeds without you, picks cheap-to-change options on its own and lays them out in a closing report so you can change any of them.
+- **A run that outlasts the quota.** When the 5-hour usage window runs dry, the run resumes itself once it refills, with its context kept, instead of stopping half-way.
+- **Quiet until called.** levi never acts on its own; a prompt without the levi command is handled by your tool as usual. `/levi <request>` routes a request, in any language, to the best matching usecase.
+- **Your files stay yours.** Everything installed is a plain file in your repository. `levi update` refreshes only what you did not touch and never overwrites your edits.
+- **Featherlight.** No runtime dependencies; Node.js 18 or newer is all it asks for.
 
 **Full documentation: [docs/](docs/README.md)**: installation, usage, updating, the CLI reference and more.
 
@@ -55,7 +65,7 @@ Each agent does only its own role's work and writes only the files it owns; work
 
 Some usecases are also a role's skill: `spec-writing` for the PM, `design` for the designer, `code-review` for the teamlead and `generate-test-scenarios` for QA. They are installed with every install, and the agent follows that skill's guide whenever it gets that kind of task, from any usecase. A usecase declares this with `skill-for`, `skill-when` and `skill-guide` in its `SKILL.md`.
 
-The usecase's skill or workflow runs the team: it calls each member in turn. The PM only decides who owns each task and records it; the workflow follows that. Members hand work to each other through files in a work folder (`docs/levi/<slug>/` by default): `spec.md`, `status.md`, `docs/designs/`, `architecture.md`, `tasks.md`, `review.md`, `test-plan.md`, `test-report.md`. On Codex, every installed skill also gets a small `scripts/codex-run-state.mjs` helper; long runs record `run.json` in that work folder so they can resume after an interruption. The shared rules live in `agents/_team-protocol.md`, which is appended to every team agent. Every usecase also follows the run rules in `usecases/_run-rules.md`, appended to each installed `SKILL.md`: all questions are asked up front, cheap-to-change choices are picked and reported at the end, and a run that hits the 5-hour quota resumes itself ([docs/unattended-runs.md](docs/unattended-runs.md)).
+The usecase's skill or workflow runs the team: it calls each member in turn. The PM only decides who owns each task and records it; the workflow follows that. Members hand work to each other through files in a work folder (`docs/levi/<slug>/` by default): `spec.md`, `status.md`, `docs/designs/`, `architecture.md`, `tasks.md`, `review.md`, `test-plan.md`, `test-report.md`. On Codex, every installed skill also gets a small `scripts/codex-run-state.mjs` helper; long runs record `run.json` in that work folder so they can resume after an interruption. The shared rules live in `agents/_team-protocol.md`, which is appended to every team agent. Every usecase also follows the run rules in `usecases/_run-rules.md`, appended to each installed `SKILL.md`: all questions are asked up front, cheap-to-change choices are picked and reported at the end, and a run that hits the 5-hour quota resumes itself with its context kept ([docs/unattended-runs.md](docs/unattended-runs.md)).
 
 ## Update
 
