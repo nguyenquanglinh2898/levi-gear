@@ -1,7 +1,7 @@
 {
   "name": "levi-gear",
   "version": "0.3.0",
-  "description": "An agentic kit: Agent Skills for Claude Code, Codex and Copilot that run unattended and resume with their context kept, installable via npm",
+  "description": "Summon a whole software team (PM, teamlead, developer, designer, QA) into Claude Code, Codex and Copilot: test-first workflows that run unattended, outlast the quota and never trample your files",
   "bin": {
     "levi": "./bin/levi.js"
   },
