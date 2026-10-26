@@ -18,7 +18,7 @@ The final report ends with **Choices I made for you**: every choice, the pick, t
 
 ## 3. The quota guard
 
-A run with more than one stage checks how much of the 5-hour usage window is used at every stage boundary (`scripts/quota-check.mjs check`, in every skill folder). At **95% or more** it finishes the step in progress, writes its checkpoint, arms a job that resumes the run every 2 hours, and keeps working. If the limit then stops the run, the job fires once the quota is back and sends:
+A run with more than one stage checks how much of the 5-hour usage window is used at every stage boundary (`scripts/quota-check.mjs check`, in every skill folder). At **95% or more** it finishes the step in progress, writes its checkpoint, writes the handoff report `docs/breakpoints/handoff.md` (see below), arms a job that resumes the run every 2 hours, and keeps working. If the limit then stops the run, the job fires once the quota is back and sends:
 
 > I ran out of quota a moment ago and the run was interrupted. Please continue the process or workflow you were running.
 
@@ -32,6 +32,10 @@ The resumed run continues from its recorded stage without repeating finished one
 | Copilot | No way to read the quota or to schedule: the run says so and goes on | |
 
 **When the usage cannot be read** (Claude Code without the setup below, or with API-key billing), the run arms the same job right after the opening questions, so you are covered anyway, and removes it when the run ends.
+
+### The handoff report
+
+At the 95% threshold the run also writes one file, `docs/breakpoints/handoff.md`. It is always that single file, and each new interruption overwrites it whole (still-unfinished items are carried over). It starts with a status line (`interrupted` or `complete`) and holds the goal and your answers, the project context, a stage table (done, in progress, not started), the deliverables and decisions so far, the ordered next steps, the state of the files, open items, and how to continue. It is written for a reader with no other context, so the session that resumes after the reset, or a different AI agent on another platform that you hand the file to, needs nothing else to carry on. The resumed run reads it first; when the run ends it overwrites the file with `Status: complete`. It never contains secrets.
 
 ### Setting up the statusline (Claude Code, once)
 
