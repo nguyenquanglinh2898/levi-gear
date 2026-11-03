@@ -2,11 +2,9 @@
 
 ## `/levi` is not recognized
 
-- Check that the files exist: `.claude/skills/levi/SKILL.md` (Claude Code), `.agents/skills/levi/SKILL.md` (Codex, and Copilot without Claude). If not, run `npx levi-gear@latest init`.
+- Check that the files exist: `.claude/skills/levi/SKILL.md`. If not, run `npx levi-gear@latest init`.
 - Make sure you ran `init` in the project root, not a subfolder.
-- Restart the tool or open a new session: tools often load skills at start.
-- Codex uses `$levi`, not `/levi`.
-- If you installed with `--tools` that left your tool out, add it: `npx levi-gear@latest init --tools claude,codex`.
+- Restart Claude Code or open a new session: skills are loaded at start.
 
 ## The entry point picks the wrong usecase
 
@@ -56,10 +54,10 @@ Team agents never ask you directly; they return questions and the usecase's work
 
 ## Files left behind in `docs/levi/`
 
-A usecase writes scratch files there during a run and deletes them at the end. An interrupted Codex run may also leave `run.json`: it is the resume checkpoint. Invoke the same usecase again and let it read that file, or inspect it with `node .agents/skills/levi-<usecase>/scripts/codex-run-state.mjs status docs/levi/<slug>`. Delete the folder only when you intentionally abandon the run; ordinary scratch files beside `run.json` are safe to delete only after doing so.
+A usecase writes scratch files there during a run and deletes them at the end. An interrupted run leaves them behind, together with `docs/breakpoints/handoff.md` when the quota guard fired. Delete the folder only when you intentionally abandon the run.
 
 ## Where to look for what changed
 
 - `git diff` shows what `update` changed.
 - `.levi.json` lists every file levi manages.
-- [Configuration and file layout](configuration.md) explains where each tool's files go.
+- [Configuration and file layout](configuration.md) explains where the files go.

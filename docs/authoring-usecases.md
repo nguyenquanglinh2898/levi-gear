@@ -14,7 +14,7 @@ agents/<role>.md        # team agents shared by all usecases; frontmatter name: 
 agents/_*.md            # partials appended to every team agent
 ```
 
-Everything in the usecase folder except `agents/` is copied into each tool's skill folder. `agents/` becomes subagent files in the formats each tool needs.
+Everything in the usecase folder except `agents/` is copied into the skill folder. `agents/` becomes Claude Code subagent files.
 
 ## SKILL.md
 
@@ -24,7 +24,7 @@ Frontmatter fields:
 |---|---|---|
 | `name` | yes | Must be exactly `levi-<id>`, where `<id>` is the folder name |
 | `description` | yes | What the usecase does and which requests fit it |
-| `argument-hint` | no | Shown by tools that support it, for example `"<problem or idea>"` |
+| `argument-hint` | no | Shown by Claude Code, for example `"<problem or idea>"` |
 | `requires` | no | Comma list of usecase ids this one builds on, for example `spec-writing, brainstorming`. Installing this usecase installs them too |
 | `skill-for` | no | Comma list of team roles (`qa`, `pm`, ...) this usecase is the skill of. See [Role skills](#role-skills) |
 | `skill-when` | with `skill-for` | The kind of task, completing "When ...", for example `you write or change test cases or test scenarios` |
@@ -36,9 +36,9 @@ The `description` is what the `levi` entry point matches requests against, so st
 
 The body is the workflow. Keep the workflow in this file: the entry point reads it directly, because manual-only skills cannot be called through a skill tool.
 
-To reuse another usecase, list it in `requires` and tell the workflow to read its `SKILL.md` in the sibling folder (`levi-<id>/SKILL.md`) and follow it. Installed skills sit side by side in each tool's skill folder.
+To reuse another usecase, list it in `requires` and tell the workflow to read its `SKILL.md` in the sibling folder (`levi-<id>/SKILL.md`) and follow it. Installed skills sit side by side in `.claude/skills/`.
 
-A usecase may ship a Claude Code Workflow script (for example `workflow.js`) to run independent subagents from code. The tool calls it by its path in the skill folder. It is not a portable Node program. For Codex, write a durable runner in the skill (normally a focused reference) that uses the installed `scripts/codex-run-state.mjs` helper to persist the current stage and artifacts in `docs/levi/<slug>/run.json`; resume from that file, never from chat history. Short, read-only single-agent usecases can be retried safely instead. See `usecases/create-feature/`.
+A usecase may ship a Claude Code Workflow script (for example `workflow.js`) to run independent subagents from code. The Workflow tool calls it by its path in the skill folder. It is not a portable Node program. Give the skill a fallback for when no Workflow tool is available: the same steps run in order as subagent calls. See `usecases/create-feature/`.
 
 ## Role skills
 
@@ -65,15 +65,15 @@ Both usecase agents and team agents use this frontmatter:
 |---|---|---|
 | `name` | yes | `levi-<id>-<role>` for usecase agents; `levi-<role>` for team agents |
 | `description` | yes | What the agent does and when it is used |
-| `tools` | no | Comma list of `read`, `edit`, `execute`, `web`. Omit for the tool's defaults |
+| `tools` | no | Comma list of `read`, `edit`, `execute`, `web`. Omit for the defaults |
 | `model` | no | `strong`, `standard` or `fast`. Omit to inherit |
 
-How these map to each tool: see [Configuration and file layout](configuration.md#how-agent-fields-are-converted).
+How these map to Claude Code: see [Configuration and file layout](configuration.md#how-agent-fields-are-converted).
 
 Rules:
 
-- An explicit `tools` list cuts off MCP tools on Claude Code and Copilot. Leave it out for agents that need a browser or other MCP servers.
-- The installer appends a note to every subagent description so the tool delegates to it only through its usecase.
+- An explicit `tools` list cuts off MCP tools. Leave it out for agents that need a browser or other MCP servers.
+- The installer appends a note to every subagent description so Claude Code delegates to it only through its usecase.
 - A usecase id must not reuse a team role name (`pm`, `teamlead`, `developer`, `designer`, `qa`): `levi-<id>` would name both a skill and an agent.
 - Agent names must be unique across the whole kit.
 - `usecases/_run-rules.md` is not a usecase: it holds the run rules (ask everything first, pick instead of ask, quota guard) that the installer appends to every installed `SKILL.md`, and the installer adds `scripts/quota-check.mjs` to every skill folder for the quota guard. Do not restate those rules in a usecase; when a step asks the user, say what the question is and let the rules decide when it is asked. See [Unattended runs](unattended-runs.md).
@@ -111,9 +111,7 @@ node /path/to/levi-gear/bin/levi.js init
 node /path/to/levi-gear/bin/levi.js status
 ```
 
-Inspect the generated files for each tool. Then change a generated file and run `status` and `update` to confirm that your edit is kept. When you can, run the usecase in each real client.
-
-For a stateful Codex usecase, also interrupt a run in each nonterminal stage, start a fresh chat, run the usecase again and confirm it reads `run.json`, does not repeat completed artifacts, and resumes the recorded stage. Test `wait`, `block` and `resume`, as well as a completed run's cleanup.
+Inspect the generated files. Then change a generated file and run `status` and `update` to confirm that your edit is kept. When you can, run the usecase in Claude Code.
 
 ## Release
 

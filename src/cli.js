@@ -9,8 +9,8 @@ const HELP = `levi ${kitVersion()}
 Usage: levi <command>
 
 Commands:
-  init [usecase...] [--tools claude,codex,copilot]
-           Install usecases (all by default) for the chosen tools
+  init [usecase...]
+           Install usecases (all by default) for Claude Code
   update [--force [path...]]
            Refresh installed files to this package version. Files you changed are kept;
            --force overwrites them (all, or only the given paths)
@@ -30,7 +30,7 @@ function main(argv) {
       case 'status':
         return status(projectDir);
       case 'list':
-        return list(projectDir);
+        return list();
       case undefined:
       case '-h':
       case '--help':

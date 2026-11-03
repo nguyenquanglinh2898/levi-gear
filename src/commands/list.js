@@ -1,8 +1,7 @@
-const config = require('../lib/config');
 const { listUsecases } = require('../lib/usecases');
-const { TOOLS, invocationHelp } = require('../lib/tools');
+const { INVOCATION_HELP } = require('../lib/tools');
 
-function list(projectDir) {
+function list() {
   const usecases = listUsecases();
   if (!usecases.length) console.log('No usecases in the kit yet.');
   for (const u of usecases) {
@@ -11,8 +10,7 @@ function list(projectDir) {
     console.log(`${u.id}${roles}${requires}\n  ${u.description}`);
   }
   if (usecases.length) {
-    const installed = config.read(projectDir);
-    console.log(`\nInvoke with:\n${invocationHelp(installed ? installed.tools : TOOLS)}`);
+    console.log(`\nInvoke with:\n${INVOCATION_HELP}`);
   }
 }
 

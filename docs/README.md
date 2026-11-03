@@ -1,12 +1,12 @@
 # levi documentation
 
-levi is an agentic kit. It installs ready-made workflows (**usecases**) and a shared **team** of role agents into your project, for Claude Code, Codex and GitHub Copilot, with one command.
+levi is an agentic kit. It installs ready-made workflows (**usecases**) and a shared **team** of role agents into your project, for Claude Code, with one command.
 
 ## Getting started
 
 1. [Introduction](introduction.md): what levi is and how the pieces fit together
 2. [Installation](installation.md): requirements, `levi init`, what lands in your project
-3. [Usage](usage.md): how to invoke levi in each tool
+3. [Usage](usage.md): how to invoke levi
 
 ## Guides
 
@@ -27,14 +27,13 @@ levi is an agentic kit. It installs ready-made workflows (**usecases**) and a sh
 ## Quick start
 
 ```bash
-npx levi-gear@latest init        # install everything, for all three tools
+npx levi-gear@latest init        # install everything
 ```
 
-Then, in your tool:
+Then, in Claude Code:
 
 ```text
-/levi brainstorm how we should add CSV export to orders     # Claude Code, Copilot
-$levi brainstorm how we should add CSV export to orders     # Codex
+/levi brainstorm how we should add CSV export to orders
 ```
 
 Keep it current with `npx levi-gear@latest update`.

@@ -10,7 +10,7 @@ function status(projectDir) {
     process.exitCode = 1;
     return;
   }
-  const { actions } = sync(projectDir, Object.keys(existing.usecases), existing.tools, existing, { dryRun: true });
+  const { actions } = sync(projectDir, Object.keys(existing.usecases), existing, { dryRun: true });
   printReport(actions, { dryRun: true });
 }
 
