@@ -1,16 +1,12 @@
 # Usage
 
-levi runs only when you ask for it. Everything you type that does not start with the levi command is handled by your tool as usual.
+levi runs only when you ask for it. Everything you type that does not start with the levi command is handled by Claude Code as usual.
 
 ## Invoking
 
-| Tool | Let levi pick the usecase | Call a usecase directly |
-|---|---|---|
-| Claude Code | `/levi <request>` | `/levi-<usecase> <request>` |
-| Copilot | `/levi <request>` | `/levi-<usecase> <request>` |
-| Codex | `$levi <request>` | `$levi-<usecase> <request>` |
-
-Codex has no user-defined `/` commands in a repository, so it uses `$` instead. `levi init`, `update` and `list` print the right syntax for the tools you installed.
+| Let levi pick the usecase | Call a usecase directly |
+|---|---|
+| `/levi <request>` | `/levi-<usecase> <request>` |
 
 ## The entry point: `levi <request>`
 
@@ -41,11 +37,8 @@ This is also the way to run the runner-up when the entry point picked a differen
 # let levi choose
 /levi we need to let users export orders as CSV, what is the plan?
 
-# direct call in Claude Code or Copilot
+# direct call
 /levi-brainstorming split the checkout refactor into tasks and estimate it
-
-# direct call in Codex
-$levi-brainstorming split the checkout refactor into tasks and estimate it
 ```
 
 ## What happens during a run

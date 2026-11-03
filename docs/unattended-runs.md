@@ -18,24 +18,19 @@ The final report ends with **Choices I made for you**: every choice, the pick, t
 
 ## 3. The quota guard
 
-A run with more than one stage checks how much of the 5-hour usage window is used at every stage boundary (`scripts/quota-check.mjs check`, in every skill folder). At **95% or more** it finishes the step in progress, writes its checkpoint, writes the handoff report `docs/breakpoints/handoff.md` (see below), arms a job that resumes the run every 2 hours, and keeps working. If the limit then stops the run, the job fires once the quota is back and sends:
+A run with more than one stage checks how much of the 5-hour usage window is used at every stage boundary (`scripts/quota-check.mjs check`, in every skill folder). At **95% or more** it finishes the step in progress, makes sure the work folder holds what is done, writes the handoff report `docs/breakpoints/handoff.md` (see below), arms a job that resumes the run every 2 hours, and keeps working. If the limit then stops the run, the job fires once the quota is back and sends:
 
 > I ran out of quota a moment ago and the run was interrupted. Please continue the process or workflow you were running.
 
-The resumed run continues from its recorded stage without repeating finished ones, and the job is removed: by the resumed run on Claude Code (once usage is below 95%), by the job itself on Codex, and in any case when the run ends.
+The resumed run continues from its recorded stage without repeating finished ones. It removes the job once usage is below 95%, and the run removes it in any case when it ends.
 
-| | Claude Code | Codex |
-|---|---|---|
-| Reads the usage from | A file the statusline writes (setup below) | The newest session file in `~/.codex/sessions`, nothing to set up |
-| Job | `CronCreate`, recurring `7 */2 * * *`, inside the session | The scheduled task of the Codex app (every 2 hours, on the thread) when the session has the tool; otherwise a `crontab` line every 2 hours that runs `codex exec resume <session>` |
-| Needs | The session to stay open (it does while waiting for the limit) | The app open, or for crontab a running cron daemon |
-| Copilot | No way to read the quota or to schedule: the run says so and goes on | |
+The job is `CronCreate`, recurring `7 */2 * * *`, inside the Claude Code session, so the session has to stay open (it does while waiting for the limit). The usage is read from a file the statusline writes (setup below).
 
-**When the usage cannot be read** (Claude Code without the setup below, or with API-key billing), the run arms the same job right after the opening questions, so you are covered anyway, and removes it when the run ends.
+**When the usage cannot be read** (no statusline setup below, or API-key billing), the run arms the same job right after the opening questions, so you are covered anyway, and removes it when the run ends.
 
 ### The handoff report
 
-At the 95% threshold the run also writes one file, `docs/breakpoints/handoff.md`. It is always that single file, and each new interruption overwrites it whole (still-unfinished items are carried over). It starts with a status line (`interrupted` or `complete`) and holds the goal and your answers, the project context, a stage table (done, in progress, not started), the deliverables and decisions so far, the ordered next steps, the state of the files, open items, and how to continue. It is written for a reader with no other context, so the session that resumes after the reset, or a different AI agent on another platform that you hand the file to, needs nothing else to carry on. The resumed run reads it first; when the run ends it overwrites the file with `Status: complete`. It never contains secrets.
+At the 95% threshold the run also writes one file, `docs/breakpoints/handoff.md`. It is always that single file, and each new interruption overwrites it whole (still-unfinished items are carried over). It starts with a status line (`interrupted` or `complete`) and holds the goal and your answers, the project context, a stage table (done, in progress, not started), the deliverables and decisions so far, the ordered next steps, the state of the files, open items, and how to continue. It is written for a reader with no other context, so the session that resumes after the reset, or a different agent that you hand the file to, needs nothing else to carry on. The resumed run reads it first; when the run ends it overwrites the file with `Status: complete`. It never contains secrets.
 
 ### Setting up the statusline (Claude Code, once)
 
@@ -51,6 +46,4 @@ To keep a statusline you already have, pipe into it: `node .../quota-check.mjs r
 
 - Claude Code can also wait out the limit by itself ("Continue automatically at usage limit" in `/config`). The job is the backup for when that stops, for example after two limit hits in a row.
 - A scheduled prompt that fires while the limit is still on may fail; it is tried again 2 hours later.
-- On WSL, cron does not start by itself unless systemd is enabled. `cron-arm` warns when no cron daemon is running.
-- The Codex job uses the approval and sandbox flags the run passes to `cron-arm` (for example `--full-auto`); without them a resumed `codex exec` runs with Codex's defaults.
-- `node scripts/quota-check.mjs check --tool codex` prints the current usage as JSON, which is handy to test the setup. `cron-disarm --session <id>` removes a job by hand.
+- `node scripts/quota-check.mjs check` prints the current usage as JSON, which is handy to test the setup.

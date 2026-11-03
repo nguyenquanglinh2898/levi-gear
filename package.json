@@ -1,12 +1,12 @@
 {
   "name": "levi-gear",
   "version": "0.4.0",
-  "description": "Summon a whole software team (PM, teamlead, developer, designer, QA) into Claude Code, Codex and Copilot: test-first workflows that run unattended, outlast the quota and never trample your files",
+  "description": "Summon a whole software team (PM, teamlead, developer, designer, QA) into Claude Code: test-first workflows that run unattended, outlast the quota and never trample your files",
   "bin": {
     "levi": "./bin/levi.js"
   },
   "scripts": {
-    "test": "node --test test/codex-runtime.test.mjs test/quota-check.test.mjs"
+    "test": "node --test test/quota-check.test.mjs test/legacy-tools-cleanup.test.mjs"
   },
   "files": [
     "agents",

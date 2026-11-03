@@ -98,10 +98,10 @@ function recordFiles(actions, ids) {
   return config;
 }
 
-// Brings the project in line with the kit for `ids` and `tools`, touching only files the user
+// Brings the project in line with the kit for `ids`, touching only files the user
 // has not changed. `previous` is the stored config. With dryRun nothing is written.
-function sync(projectDir, ids, tools, previous, { force = false, dryRun = false } = {}) {
-  const desired = build(loadKit(), ids, tools);
+function sync(projectDir, ids, previous, { force = false, dryRun = false } = {}) {
+  const desired = build(loadKit(), ids);
   const actions = plan(projectDir, desired, trackedFiles(previous), force);
   if (!dryRun) apply(projectDir, actions);
   return { actions, missing: desired.missing, ...recordFiles(actions, desired.ids) };

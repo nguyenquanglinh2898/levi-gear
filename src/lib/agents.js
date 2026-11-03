@@ -7,7 +7,7 @@ const TEAM_DIR = path.join(__dirname, '..', '..', 'agents');
 // Files in agents/ starting with "_" are not agents: they are appended to every team agent.
 const PARTIAL = '_';
 
-// Tool-neutral fields. The installer maps them to each tool in tools.js.
+// Tool-neutral fields. The installer maps them to Claude Code in tools.js.
 const CAPABILITIES = ['read', 'edit', 'execute', 'web'];
 const MODEL_TIERS = ['strong', 'standard', 'fast'];
 

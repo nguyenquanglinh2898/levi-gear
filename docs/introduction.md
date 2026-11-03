@@ -1,6 +1,6 @@
 # Introduction
 
-levi is an npm package that installs **Agent Skills** and **subagents** into a project, so that Claude Code, Codex and GitHub Copilot can run the same team workflows. It has no runtime dependencies and needs Node.js 18 or newer.
+levi is an npm package that installs **Agent Skills** and **subagents** into a project, so that Claude Code can run team workflows. It has no runtime dependencies and needs Node.js 18 or newer.
 
 ## The pieces
 
@@ -15,9 +15,9 @@ A usecase is the *what*: the steps to follow. The team is the *who*: the roles t
 
 ## Design principles
 
-**Manual only.** levi never runs by itself. Every installed skill is marked so that the tool does not trigger it on its own. A prompt that does not start with the levi command is handled by your tool as usual.
+**Manual only.** levi never runs by itself. Every installed skill is marked so that Claude Code does not trigger it on its own. A prompt that does not start with the levi command is handled by Claude Code as usual.
 
-**One kit, three tools.** You write a usecase once. The installer converts it for each tool: skill folders for all three, subagent files in Markdown for Claude Code and Copilot, TOML for Codex.
+**Built for Claude Code.** You write a usecase once. The installer writes it as a Claude Code skill folder and subagent files.
 
 **Your files are yours.** Installed files are plain files in your repository. You can edit them. `levi update` keeps every file you changed and only refreshes the ones you did not touch.
 
@@ -44,12 +44,6 @@ you:  /levi break "export orders as CSV" into tasks
 
 You can skip the entry point and call the usecase directly: `/levi-brainstorming <request>`.
 
-## Supported tools
+## Supported tool
 
-| Tool | Skills read from | Subagents written to |
-|---|---|---|
-| Claude Code | `.claude/skills/` | `.claude/agents/` |
-| Codex | `.agents/skills/` | `.codex/agents/` |
-| GitHub Copilot | `.claude/skills/` and `.agents/skills/` | `.github/agents/` |
-
-You choose which tools to install for. See [Installation](installation.md).
+levi supports Claude Code only: skills are read from `.claude/skills/` and subagents from `.claude/agents/`. Earlier versions also supported Codex and GitHub Copilot; see [Leftovers from earlier versions](configuration.md#leftovers-from-earlier-versions) if you installed for them.

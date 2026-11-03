@@ -95,9 +95,9 @@ Team agents and the entry point are always updated.
 
 If an installed usecase no longer exists in the new version, `update` removes its files that you did not change, keeps the ones you edited, and prints `<id> is no longer in the kit; its unchanged files were removed.`
 
-## Changing tools
+## Upgrading from a version that supported Codex or Copilot
 
-`update` keeps the tools you chose at install time. To add or drop a tool, run `levi init --tools ...`. See [Installation](installation.md#running-init-again).
+`update` removes the Codex and Copilot files an older install wrote (`.agents/skills/`, `.codex/agents/`, `.github/agents/`) when you did not edit them, keeps and reports the ones you did, and drops the `tools` field from `.levi.json`. See [Leftovers from earlier versions](configuration.md#leftovers-from-earlier-versions).
 
 ## Typical flow
 

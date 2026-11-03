@@ -14,7 +14,7 @@ This page covers changes to levi itself: the CLI, the team agents and the usecas
 bin/levi.js      # executable entry; calls src/cli.js
 src/cli.js          # command dispatch and help
 src/commands/       # init, update, status, list
-src/lib/            # kit loading, install planning, per-tool rendering, hashing
+src/lib/            # kit loading, install planning, agent rendering, hashing
 agents/             # team agents and the shared team protocol
 usecases/<id>/      # one folder per usecase
 docs/               # this documentation; not published to npm
@@ -26,7 +26,7 @@ Where the logic lives:
 |---|---|
 | `src/lib/usecases.js` | Loads and validates usecases and the whole kit |
 | `src/lib/agents.js` | Reads team agents, validates agent frontmatter |
-| `src/lib/tools.js` | Per-tool paths, manual-only policy, agent rendering |
+| `src/lib/tools.js` | Install paths and agent rendering |
 | `src/lib/desired-state.js` | Builds the set of files a clean install would contain |
 | `src/lib/sync.js` | Compares that set with disk and `.levi.json`, then applies it |
 | `src/lib/router.js` | Generates the `levi` entry point skill |
